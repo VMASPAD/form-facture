@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Container, Column } from '@/pages/Menu'
-import { ParseTable } from '@/lib/parse'
+import { ParseTable, shareInvoiceFile } from '@/lib/parse'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router'
 import { motion } from 'motion/react'
-import { Plus, Trash2, ArrowLeft, Save, FileText, Trash } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Save, FileText, Share } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -32,7 +32,7 @@ function Editor() {
   const [newColumn, setNewColumn] = useState({ name: '', type: 'text' as 'text' | 'number', sum: false })
   const [editingRowData, setEditingRowData] = useState<Record<string, any>>({})
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
-  const [isDeletingPDF, setIsDeletingPDF] = useState(false)
+  const [isSharing, setIsSharing] = useState(false)
 
   // Load container from localStorage
   useEffect(() => {
@@ -192,7 +192,7 @@ function Editor() {
     setIsGeneratingPDF(true);
     
     try {
-      const htmlString = ParseTable(container);
+      const htmlString = await ParseTable(container);
       console.log('HTML generado:', htmlString);
       
       // Preparar el payload para la API
@@ -237,7 +237,7 @@ function Editor() {
       toast.error("Error al generar PDF. Se descargó HTML como alternativa.");
       
       // Fallback: descargar HTML si falla la API
-      const htmlString = ParseTable(container);
+      const htmlString = await ParseTable(container);
       const blob = new Blob([htmlString], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       
@@ -255,10 +255,25 @@ function Editor() {
     }
   };
 
-  const handleDeletePDF = async () => {
+  const handleShareFile = async () => {
     if (!container) return;
     
-    setIsDeletingPDF(true);
+    setIsSharing(true);
+    
+    try {
+      const htmlString = await ParseTable(container);
+      await shareInvoiceFile(container, htmlString);
+      toast.success("Archivo compartido exitosamente");
+    } catch (error) {
+      console.error('Error al compartir archivo:', error);
+      toast.error("Error al compartir archivo");
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleDeletePDF = async () => {
+    if (!container) return;
     
     try {
       const pdfName = `${container.title.replace(/\s+/g, '_')}_factura`;
@@ -287,8 +302,6 @@ function Editor() {
     } catch (error) {
       console.error('Error al eliminar PDF:', error);
       toast.error("Error al eliminar PDF del servidor");
-    } finally {
-      setIsDeletingPDF(false);
     }
   };
 
@@ -338,7 +351,10 @@ function Editor() {
             <Button
               variant="outline"
               className="flex items-center gap-2"
-              onClick={handleGenerateHTML}
+              onClick={() => {
+                handleGenerateHTML();
+                handleShareFile();
+              }}
               disabled={isGeneratingPDF}
             >
               <FileText className="h-4 w-4" />

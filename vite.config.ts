@@ -20,6 +20,7 @@ export default defineConfig(async () => ({
   server: {
     port: 1420,
     strictPort: true,
+    cors: true,
     host: host || false,
     hmr: host
       ? {

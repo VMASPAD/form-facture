@@ -1,6 +1,167 @@
 import { Container } from '@/pages/Menu';
+import { shareFile } from 'tauri-plugin-share';
+import { writeTextFile, writeFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { appDataDir, join, documentDir } from '@tauri-apps/api/path';
 
-export function ParseTable(container: Container): string {
+// Función separada para compartir archivos
+export async function shareInvoiceFile(container: Container, htmlContent: string): Promise<void> {
+    const timestamp = Date.now();
+    
+    try {
+        console.log('🔄 Generando PDF en servidor...');
+        
+        // Preparar el payload para la API
+        const payload = {
+            name: `${container.title.replace(/\s+/g, '_')}_factura_${timestamp}`,
+            content: htmlContent
+        };
+        
+        // Generar PDF en el servidor
+        const response = await fetch('https://pdfconvertor.hermesbackend.xyz/generate-pdf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error en el servidor PDF: ${response.status} ${response.statusText}`);
+        }
+        
+        // Obtener el binario del PDF
+        const pdfBlob = await response.blob();
+        console.log('✅ PDF generado exitosamente');
+        
+        // Estrategias para guardar y compartir el PDF
+        const strategies = [
+            {
+                name: 'Documents Directory PDF',
+                async execute() {
+                    const fileName = `factura_${container.id}_${timestamp}.pdf`;
+                    
+                    // Convertir blob a array buffer para escribir
+                    const arrayBuffer = await pdfBlob.arrayBuffer();
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    
+                    // Escribir el PDF en Documents
+                    await writeFile(fileName, uint8Array, {
+                        baseDir: BaseDirectory.Document
+                    });
+                    
+                    const docPath = await documentDir();
+                    return await join(docPath, fileName);
+                }
+            },
+            {
+                name: 'App Data Directory PDF',
+                async execute() {
+                    const fileName = `factura_${container.id}_${timestamp}.pdf`;
+                    
+                    const arrayBuffer = await pdfBlob.arrayBuffer();
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    
+                    await writeFile(fileName, uint8Array, {
+                        baseDir: BaseDirectory.AppData
+                    });
+                    
+                    const appPath = await appDataDir();
+                    return await join(appPath, fileName);
+                }
+            }
+        ];
+
+        // Intentar cada estrategia
+        for (const strategy of strategies) {
+            try {
+                console.log(`📁 Intentando guardar PDF con: ${strategy.name}`);
+                const filePath = await strategy.execute();
+                console.log(`✅ PDF guardado en: ${filePath}`);
+                
+                // Compartir el PDF
+                await shareFile(filePath, 'application/pdf');
+                console.log(`🎉 PDF compartido exitosamente usando: ${strategy.name}`);
+                
+                // Limpiar PDF del servidor después del éxito
+                try {
+                    await cleanupServerPDF(payload.name);
+                } catch (cleanupError) {
+                    console.warn('⚠️ No se pudo limpiar el PDF del servidor:', cleanupError);
+                }
+                
+                return; // Éxito, salir
+                
+            } catch (error) {
+                console.error(`❌ Error en estrategia ${strategy.name}:`, JSON.stringify(error, null, 2));
+            }
+        }
+        
+        throw new Error('No se pudo guardar el PDF en ninguna ubicación');
+        
+    } catch (error) {
+        console.error('❌ Error al generar/compartir PDF:', JSON.stringify(error, null, 2));
+        
+        // Fallback: compartir como texto si el PDF falla
+        console.log('📝 Usando fallback de texto...');
+        await shareTextFallback(container, timestamp);
+    }
+}
+
+// Función auxiliar para limpiar PDF del servidor
+async function cleanupServerPDF(pdfName: string): Promise<void> {
+    try {
+        const response = await fetch('https://pdfconvertor.hermesbackend.xyz/eliminate-pdf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: pdfName })
+        });
+        
+        if (response.ok) {
+            console.log('🗑️ PDF eliminado del servidor');
+        }
+    } catch (error) {
+        console.warn('⚠️ Error al eliminar PDF del servidor:', error);
+    }
+}
+
+// Función auxiliar para fallback de texto
+async function shareTextFallback(container: Container, timestamp: number): Promise<void> {
+    const textContent = `FACTURA: ${container.title}
+${container.description || ''}
+
+${container.columns.map(col => col.name).join(' | ')}
+${container.data.map(row => 
+    container.columns.map(col => 
+        col.type === 'number' && typeof row[col.id] === 'number' 
+            ? row[col.id].toFixed(2) 
+            : row[col.id] || ''
+    ).join(' | ')
+).join('\n')}
+
+Generado: ${new Date().toLocaleDateString('es-ES')}`;
+    
+    const textFileName = `factura_${container.id}_${timestamp}.txt`;
+    
+    try {
+        await writeTextFile(textFileName, textContent, {
+            baseDir: BaseDirectory.Document
+        });
+        
+        const docPath = await documentDir();
+        const textPath = await join(docPath, textFileName);
+        
+        await shareFile(textPath, 'text/plain');
+        console.log('📝 Compartido como texto plano exitosamente');
+        
+    } catch (textError) {
+        console.error('❌ Error también con texto:', textError);
+        throw new Error('No se pudo compartir ni como PDF ni como texto');
+    }
+}
+
+export async function ParseTable(container: Container, shouldShare: boolean = false): Promise<string> {
     // Función auxiliar para formatear números
     const formatNumber = (value: any, isNumber: boolean): string => {
         if (!isNumber || value === undefined || value === null) {
@@ -48,7 +209,7 @@ export function ParseTable(container: Container): string {
         const totalCells = container.columns.map(column => {
             if (column.type === 'number' && column.sum) {
                 const sum = calculateColumnSum(column.id);
-                return `          <td><strong>€${formatNumber(sum, true)}</strong></td>`;
+                return `          <td><strong>$${formatNumber(sum, true)}</strong></td>`;
             } else if (container.columns.indexOf(column) === 0) {
                 return `          <td><strong>Total</strong></td>`;
             } else {
@@ -149,6 +310,11 @@ ${tableRows}${totalRow ? '\n' + totalRow : ''}
     </footer>
   </body>
 </html>`;
+
+    // Solo compartir si se solicita explícitamente
+    if (shouldShare) {
+        await shareInvoiceFile(container, html);
+    }
 
     return html;
 }
