@@ -198,7 +198,8 @@ function Editor() {
       // Preparar el payload para la API
       const payload = {
         name: `${container.title.replace(/\s+/g, '_')}_factura`,
-        content: htmlString
+        content: htmlString,
+        template: container.template
       };
       
       // Hacer fetch a la API para generar PDF
