@@ -10,7 +10,7 @@ import { ParseTable, shareInvoiceFile } from '@/lib/parse'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router'
 import { motion } from 'motion/react'
-import { Plus, Trash2, ArrowLeft, Save, FileText, Share } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Save, FileText } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -258,8 +258,8 @@ function Editor() {
   const handleShareFile = async () => {
     if (!container) return;
     
+    console.log(isSharing)
     setIsSharing(true);
-    
     try {
       const htmlString = await ParseTable(container);
       await shareInvoiceFile(container, htmlString);

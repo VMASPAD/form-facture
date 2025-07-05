@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { DialogDescription } from '@radix-ui/react-dialog'
+import Templates from '@/components/Templates'
 
 export interface Container {
   id: string;
@@ -167,7 +169,7 @@ function Menu() {
             <h1 className="text-3xl font-bold">Mis Facturas</h1>
             <p className="text-muted-foreground">Gestiona tus tablas y datos</p>
           </div>
-
+<div className='flex flex-row gap-2'>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
@@ -238,9 +240,9 @@ function Menu() {
                   />
                   {newContainer.image && (
                     <div className="mt-2">
-                      <img 
-                        src={newContainer.image} 
-                        alt="Preview" 
+                      <img
+                        src={newContainer.image}
+                        alt="Preview"
                         className="w-20 h-20 object-cover rounded-md border"
                       />
                     </div>
@@ -273,8 +275,23 @@ function Menu() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <Dialog>
+            <DialogTrigger>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Ver plantillas
+              </Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Plantillas disponibles</DialogTitle>
+                <DialogDescription>
+                  <Templates />
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </div>
-
+</div>
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -428,9 +445,9 @@ function Menu() {
                 />
                 {containerProperties.image && (
                   <div className="mt-2">
-                    <img 
-                      src={containerProperties.image} 
-                      alt="Preview" 
+                    <img
+                      src={containerProperties.image}
+                      alt="Preview"
                       className="w-20 h-20 object-cover rounded-md border"
                     />
                   </div>
