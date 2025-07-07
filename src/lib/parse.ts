@@ -161,7 +161,17 @@ Generado: ${new Date().toLocaleDateString('es-ES')}`;
     }
 }
 
-export async function ParseTable(container: Container, shouldShare: boolean = false): Promise<string> {
+export async function ParseTable(
+    container: Container, 
+    shouldShare: boolean = false,
+    totalInfo?: {
+        subtotal: number;
+        percentage?: number;
+        percentageAmount?: number;
+        finalTotal: number;
+        hasPercentage: boolean;
+    }
+): Promise<string> {
     // Función auxiliar para formatear números
     const formatNumber = (value: any, isNumber: boolean): string => {
         if (!isNumber || value === undefined || value === null) {
@@ -266,6 +276,45 @@ ${infoRows.map(row => `      ${row}`).join('\n')}
       <img src="${container.image}" alt="Logo de la empresa" style="max-width: 200px; max-height: 100px;">
     </div>` : '';
 
+    // Crear sección de totales finales si se proporciona información de totales
+    let finalTotalsSection = '';
+    if (totalInfo) {
+        finalTotalsSection = `
+
+    <section id="final-totals">
+      <h3>Resumen de Totales</h3>
+      <table>
+        <tbody>
+          <tr>
+            <td><strong>Subtotal:</strong></td>
+            <td><strong>${new Intl.NumberFormat("es-ES", {
+                style: "currency",
+                currency: "ARS",
+                minimumFractionDigits: 2,
+            }).format(totalInfo.subtotal)}</strong></td>
+          </tr>
+          ${totalInfo.hasPercentage && totalInfo.percentage && totalInfo.percentageAmount ? `
+          <tr>
+            <td>Porcentaje aplicado (${totalInfo.percentage}%):</td>
+            <td>${new Intl.NumberFormat("es-ES", {
+                style: "currency",
+                currency: "ARS",
+                minimumFractionDigits: 2,
+            }).format(totalInfo.percentageAmount)}</td>
+          </tr>` : ''}
+          <tr>
+            <td><strong>Total Final:</strong></td>
+            <td><strong>${new Intl.NumberFormat("es-ES", {
+                style: "currency",
+                currency: "ARS",
+                minimumFractionDigits: 2,
+            }).format(totalInfo.finalTotal)}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>`;
+    }
+
     // Construir el HTML completo
     const html = `<html>
   <head>
@@ -289,6 +338,7 @@ ${tableHeaders}
 ${tableRows}${totalRow ? '\n' + totalRow : ''}
       </tbody>
     </table>
+${finalTotalsSection}
 
     <footer>
       <table id="summary">

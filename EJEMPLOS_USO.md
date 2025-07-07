@@ -19,13 +19,13 @@ Plantilla: 3 (Inventario)
 ### Datos de Ejemplo
 | Producto | Categoría | Cantidad | Precio Unitario | Valor Total |
 |----------|-----------|----------|----------------|-------------|
-| Laptop HP | Electrónicos | 5 | €800.00 | €4,000.00 |
-| Mouse Logitech | Periféricos | 20 | €25.00 | €500.00 |
-| Teclado Mecánico | Periféricos | 15 | €75.00 | €1,125.00 |
-| Monitor 24" | Electrónicos | 8 | €200.00 | €1,600.00 |
-| Silla Ergonómica | Mobiliario | 12 | €150.00 | €1,800.00 |
+| Laptop HP | Electrónicos | 5 | $800.00 | $4,000.00 |
+| Mouse Logitech | Periféricos | 20 | $25.00 | $500.00 |
+| Teclado Mecánico | Periféricos | 15 | $75.00 | $1,125.00 |
+| Monitor 24" | Electrónicos | 8 | $200.00 | $1,600.00 |
+| Silla Ergonómica | Mobiliario | 12 | $150.00 | $1,800.00 |
 
-**Total Inventario: €9,025.00** (suma automática)
+**Total Inventario: $9,025.00** (suma automática)
 
 ---
 
@@ -48,13 +48,13 @@ Plantilla: 2 (Financiera)
 ### Datos de Ejemplo
 | Fecha | Descripción | Categoría | Monto | Método Pago |
 |-------|-------------|-----------|-------|-------------|
-| 05/01 | Supermercado Alcampo | Alimentación | €85.50 | Tarjeta |
-| 07/01 | Gasolina | Transporte | €60.00 | Efectivo |
-| 10/01 | Netflix | Entretenimiento | €12.99 | Domiciliación |
-| 12/01 | Farmacia | Salud | €23.40 | Tarjeta |
-| 15/01 | Restaurante | Alimentación | €45.00 | Tarjeta |
+| 05/01 | Supermercado Alcampo | Alimentación | $85.50 | Tarjeta |
+| 07/01 | Gasolina | Transporte | $60.00 | Efectivo |
+| 10/01 | Netflix | Entretenimiento | $12.99 | Domiciliación |
+| 12/01 | Farmacia | Salud | $23.40 | Tarjeta |
+| 15/01 | Restaurante | Alimentación | $45.00 | Tarjeta |
 
-**Total Gastos: €226.89** (suma automática)
+**Total Gastos: $226.89** (suma automática)
 
 ---
 
@@ -109,13 +109,13 @@ Plantilla: 2 (Financiera)
 ### Datos de Ejemplo
 | Cliente | Producto | Cantidad | Precio Unitario | Descuento % | Total Venta |
 |---------|----------|----------|----------------|-------------|-------------|
-| Empresa A | Software Licencias | 10 | €500.00 | 10.00 | €4,500.00 |
-| Empresa B | Consultoria | 1 | €2,000.00 | 0.00 | €2,000.00 |
-| Empresa C | Soporte Técnico | 5 | €150.00 | 5.00 | €712.50 |
-| Empresa D | Desarrollo Custom | 1 | €8,000.00 | 15.00 | €6,800.00 |
+| Empresa A | Software Licencias | 10 | $500.00 | 10.00 | $4,500.00 |
+| Empresa B | Consultoria | 1 | $2,000.00 | 0.00 | $2,000.00 |
+| Empresa C | Soporte Técnico | 5 | $150.00 | 5.00 | $712.50 |
+| Empresa D | Desarrollo Custom | 1 | $8,000.00 | 15.00 | $6,800.00 |
 
 **Total Unidades: 17**
-**Total Ventas: €14,012.50**
+**Total Ventas: $14,012.50**
 
 ---
 

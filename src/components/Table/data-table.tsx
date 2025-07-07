@@ -20,9 +20,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
+import { Checkbox } from "../ui/checkbox"
+import { Label } from "../ui/label"
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import { Column } from "@/pages/Menu"
 
@@ -32,6 +34,8 @@ interface DataTableProps<TData, TValue> {
   containerColumns?: Column[]
   onAddRow?: () => void
   showAddButton?: boolean
+  container?: any
+  onUpdateContainer?: (container: any) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -40,10 +44,26 @@ export function DataTable<TData, TValue>({
   containerColumns = [],
   onAddRow,
   showAddButton = false,
+  container,
+  onUpdateContainer,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState("")
+  const [showPercentageInput, setShowPercentageInput] = useState(container?.percentageEnabled || false)
+  const [percentageValue, setPercentageValue] = useState<number>(container?.percentageValue || 21)
+
+  // Update container when percentage settings change
+  useEffect(() => {
+    if (container && onUpdateContainer) {
+      const updatedContainer = {
+        ...container,
+        percentageEnabled: showPercentageInput,
+        percentageValue: percentageValue,
+      }
+      onUpdateContainer(updatedContainer)
+    }
+  }, [showPercentageInput, percentageValue])
 
   const table = useReactTable({
     data,
@@ -73,6 +93,24 @@ export function DataTable<TData, TValue>({
       const numValue = typeof value === 'number' ? value : parseFloat(value) || 0
       return sum + numValue
     }, 0)
+  }
+
+  // Calculate total sum of all columns that have sum enabled
+  const calculateTotalSum = (): number => {
+    return containerColumns
+      .filter(col => col.type === 'number' && col.sum)
+      .reduce((total, col) => total + calculateSum(col.id), 0)
+  }
+
+  // Calculate percentage amount
+  const calculatePercentageAmount = (total: number): number => {
+    return showPercentageInput ? (total * percentageValue) / 100 : 0
+  }
+
+  // Calculate final total (sum + percentage)
+  const calculateFinalTotal = (): number => {
+    const baseTotal = calculateTotalSum()
+    return baseTotal + calculatePercentageAmount(baseTotal)
   }
 
   const hasSumColumns = containerColumns.some(col => col.type === 'number' && col.sum)
@@ -163,7 +201,7 @@ export function DataTable<TData, TValue>({
                         Total: {new Intl.NumberFormat("es-ES", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
-                        }).format(sum)}
+                        }).format(sum)} $
                       </TableCell>
                     )
                   }
@@ -179,6 +217,73 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+
+      {/* Totals Section with Percentage */}
+      {hasSumColumns && data.length > 0 && (
+        <div className="bg-card border rounded-lg p-4 space-y-3">
+          <h3 className="font-semibold text-lg">Resumen de Totales</h3>
+          
+          {/* Subtotal */}
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Subtotal:</span>
+            <span className="font-medium">
+              {new Intl.NumberFormat("es-ES", {
+                style: "currency",
+                currency: "ARS",
+                minimumFractionDigits: 2,
+              }).format(calculateTotalSum())}
+            </span>
+          </div>
+
+          {/* Percentage Controls */}
+          <div className="space-y-3 border-t pt-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="percentage-checkbox"
+                checked={showPercentageInput}
+                onCheckedChange={(checked) => setShowPercentageInput(checked as boolean)}
+              />
+              <Label htmlFor="percentage-checkbox" className="text-sm font-medium">
+                Agregar porcentaje (IVA, impuestos, etc.)
+              </Label>
+            </div>
+
+            {showPercentageInput && (
+              <div className="flex items-center space-x-2 ml-6">
+                <Input
+                  type="number"
+                  value={percentageValue}
+                  onChange={(e) => setPercentageValue(parseFloat(e.target.value) || 0)}
+                  className="w-20"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                />
+                <span className="text-sm text-muted-foreground">%</span>
+                <span className="text-sm font-medium ml-4">
+                  = {new Intl.NumberFormat("es-ES", {
+                    style: "currency",
+                    currency: "ARS",
+                    minimumFractionDigits: 2,
+                  }).format(calculatePercentageAmount(calculateTotalSum()))}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Final Total */}
+          <div className="flex justify-between items-center border-t pt-3">
+            <span className="text-lg font-semibold">Total Final:</span>
+            <span className="text-lg font-bold text-primary">
+              {new Intl.NumberFormat("es-ES", {
+                style: "currency",
+                currency: "ARS",
+                minimumFractionDigits: 2,
+              }).format(calculateFinalTotal())}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Pagination */}
       {table.getPageCount() > 1 && (

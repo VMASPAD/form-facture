@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Container, Column } from '@/pages/Menu'
-import { ParseTable, shareInvoiceFile } from '@/lib/parse'
+import { ParseTable } from '@/lib/parse'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router'
 import { motion } from 'motion/react'
@@ -186,22 +186,66 @@ function Editor() {
     })
   }
 
+  // Funciones auxiliares para calcular totales
+  const calculateColumnSum = (columnId: string): number => {
+    if (!container) return 0
+    const column = container.columns.find(col => col.id === columnId)
+    if (!column || column.type !== 'number' || !column.sum) return 0
+    
+    return container.data.reduce((sum, row: any) => {
+      const value = row[columnId]
+      const numValue = typeof value === 'number' ? value : parseFloat(value) || 0
+      return sum + numValue
+    }, 0)
+  }
+
+  const calculateTotalSum = (): number => {
+    if (!container) return 0
+    return container.columns
+      .filter(col => col.type === 'number' && col.sum)
+      .reduce((total, col) => total + calculateColumnSum(col.id), 0)
+  }
+
+  const calculatePercentageAmount = (total: number): number => {
+    if (!container?.percentageEnabled || !container?.percentageValue) return 0
+    return (total * container.percentageValue) / 100
+  }
+
+  const calculateFinalTotal = (): number => {
+    const baseTotal = calculateTotalSum()
+    return baseTotal + calculatePercentageAmount(baseTotal)
+  }
+
   const handleGenerateHTML = async () => {
     if (!container) return;
     
     setIsGeneratingPDF(true);
     
     try {
-      const htmlString = await ParseTable(container);
+      // Calcular totales para incluir en el PDF
+      const subtotal = calculateTotalSum();
+      const percentageAmount = calculatePercentageAmount(subtotal);
+      const finalTotal = calculateFinalTotal();
+      
+      const totalInfo = {
+        subtotal,
+        percentage: container.percentageValue || 0,
+        percentageAmount,
+        finalTotal,
+        hasPercentage: container.percentageEnabled || false
+      };
+      
+      const htmlString = await ParseTable(container, false, totalInfo);
       console.log('HTML generado:', htmlString);
       
-      // Preparar el payload para la API
+      // Preparar el payload para la API con el total final
       const payload = {
         name: `${container.title.replace(/\s+/g, '_')}_factura`,
         content: htmlString,
-        template: container.template
+        template: container.template,
+        totalAmount: finalTotal // Enviar el total final al servidor
       };
-      
+      console.log(payload)
       // Hacer fetch a la API para generar PDF
       const response = await fetch('https://pdfconvertor.hermesbackend.xyz/generate-pdf', {
         method: 'POST',
@@ -229,7 +273,11 @@ function Editor() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("Factura generada y descargada exitosamente");
+      toast.success(`Factura generada exitosamente. Total: ${new Intl.NumberFormat("es-ES", {
+        style: "currency",
+        currency: "ARS",
+        minimumFractionDigits: 2,
+      }).format(finalTotal)}`);
       console.log('PDF generado y descargado exitosamente');
       await handleDeletePDF()
       
@@ -262,9 +310,25 @@ function Editor() {
     console.log(isSharing)
     setIsSharing(true);
     try {
-      const htmlString = await ParseTable(container);
-      await shareInvoiceFile(container, htmlString);
-      toast.success("Archivo compartido exitosamente");
+      // Calcular totales para incluir en el archivo compartido
+      const subtotal = calculateTotalSum();
+      const percentageAmount = calculatePercentageAmount(subtotal);
+      const finalTotal = calculateFinalTotal();
+      
+      const totalInfo = {
+        subtotal,
+        percentage: container.percentageValue || 0,
+        percentageAmount,
+        finalTotal,
+        hasPercentage: container.percentageEnabled || false
+      };
+      
+      await ParseTable(container, true, totalInfo);
+      toast.success(`Archivo compartido exitosamente. Total: ${new Intl.NumberFormat("es-ES", {
+        style: "currency",
+        currency: "ARS",
+        minimumFractionDigits: 2,
+      }).format(finalTotal)}`);
     } catch (error) {
       console.error('Error al compartir archivo:', error);
       toast.error("Error al compartir archivo");
@@ -381,6 +445,8 @@ function Editor() {
             containerColumns={container.columns}
             onAddRow={addRow}
             showAddButton={true}
+            container={container}
+            onUpdateContainer={saveContainer}
           />
         ) : (
           <div className="text-center py-12 border rounded-lg bg-muted/20">

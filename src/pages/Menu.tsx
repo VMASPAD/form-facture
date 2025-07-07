@@ -29,6 +29,9 @@ export interface Container {
   phone?: string;
   textField?: string;
   image?: string; // Base64 string
+  // Configuración de porcentajes
+  percentageEnabled?: boolean;
+  percentageValue?: number;
 }
 
 export interface Column {
@@ -55,6 +58,9 @@ function Menu() {
     image: ''
   });
   const [containerProperties, setContainerProperties] = useState({
+    title: '',
+    description: '',
+    template: 1,
     email: '',
     phone: '',
     textField: '',
@@ -97,7 +103,9 @@ function Menu() {
       email: newContainer.email,
       phone: newContainer.phone,
       textField: newContainer.textField,
-      image: newContainer.image
+      image: newContainer.image,
+      percentageEnabled: false,
+      percentageValue: 21
     };
 
     setContainers([...containers, container]);
@@ -112,6 +120,9 @@ function Menu() {
   const openEditProperties = (container: Container) => {
     setEditingContainer(container);
     setContainerProperties({
+      title: container.title || '',
+      description: container.description || '',
+      template: container.template || 1,
       email: container.email || '',
       phone: container.phone || '',
       textField: container.textField || '',
@@ -261,6 +272,12 @@ function Menu() {
                       <SelectItem value="1">Plantilla Básica</SelectItem>
                       <SelectItem value="2">Plantilla Financiera</SelectItem>
                       <SelectItem value="3">Plantilla Inventario</SelectItem>
+                      <SelectItem value="4">Azul Corporativo</SelectItem>
+                      <SelectItem value="5">Verde Suave</SelectItem>
+                      <SelectItem value="6">Gris Elegante</SelectItem>
+                      <SelectItem value="7">Púrpura Moderno</SelectItem>
+                      <SelectItem value="8">Naranja Suave</SelectItem>
+                      <SelectItem value="9">Rosa Profesional</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -281,13 +298,16 @@ function Menu() {
                 <Plus className="h-4 w-4" />
                 Ver plantillas
               </Button></DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-4xl">
               <DialogHeader>
                 <DialogTitle>Plantillas disponibles</DialogTitle>
                 <DialogDescription>
-                  <Templates />
+                  Explora nuestras plantillas de diseño profesional para tus facturas
                 </DialogDescription>
               </DialogHeader>
+              <div className="mt-4">
+                <Templates />
+              </div>
             </DialogContent>
           </Dialog>
         </div>
@@ -405,6 +425,46 @@ function Menu() {
               <DialogTitle>Editar Propiedades del Contenedor</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 max-h-96 overflow-y-auto">
+              <div>
+                <Label htmlFor="edit-title">Título</Label>
+                <Input
+                  id="edit-title"
+                  value={containerProperties.title}
+                  onChange={(e) => setContainerProperties({ ...containerProperties, title: e.target.value })}
+                  placeholder="Título del contenedor"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-description">Descripción</Label>
+                <Input
+                  id="edit-description"
+                  value={containerProperties.description}
+                  onChange={(e) => setContainerProperties({ ...containerProperties, description: e.target.value })}
+                  placeholder="Descripción del contenedor"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-template">Plantilla</Label>
+                <Select
+                  value={containerProperties.template.toString()}
+                  onValueChange={(value) => setContainerProperties({ ...containerProperties, template: parseInt(value) })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona una plantilla" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Plantilla Básica</SelectItem>
+                    <SelectItem value="2">Plantilla Financiera</SelectItem>
+                    <SelectItem value="3">Plantilla Inventario</SelectItem>
+                    <SelectItem value="4">Azul Corporativo</SelectItem>
+                    <SelectItem value="5">Verde Suave</SelectItem>
+                    <SelectItem value="6">Gris Elegante</SelectItem>
+                    <SelectItem value="7">Púrpura Moderno</SelectItem>
+                    <SelectItem value="8">Naranja Suave</SelectItem>
+                    <SelectItem value="9">Rosa Profesional</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label htmlFor="edit-email">Email</Label>
                 <Input
