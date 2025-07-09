@@ -32,6 +32,14 @@ export interface Container {
   // Configuración de porcentajes
   percentageEnabled?: boolean;
   percentageValue?: number;
+  // Información de pago
+  paymentAccount?: string;
+  paymentCuit?: string;
+  paymentCbu?: string;
+  paymentAlias?: string;
+  // Datos de transferencias
+  transferData?: any[];
+  transferColumns?: Column[];
 }
 
 export interface Column {
@@ -55,7 +63,11 @@ function Menu() {
     email: '',
     phone: '',
     textField: '',
-    image: ''
+    image: '',
+    paymentAccount: '',
+    paymentCuit: '',
+    paymentCbu: '',
+    paymentAlias: ''
   });
   const [containerProperties, setContainerProperties] = useState({
     title: '',
@@ -64,7 +76,11 @@ function Menu() {
     email: '',
     phone: '',
     textField: '',
-    image: ''
+    image: '',
+    paymentAccount: '',
+    paymentCuit: '',
+    paymentCbu: '',
+    paymentAlias: ''
   });
 
   // Load containers from localStorage on component mount
@@ -105,11 +121,29 @@ function Menu() {
       textField: newContainer.textField,
       image: newContainer.image,
       percentageEnabled: false,
-      percentageValue: 21
+      percentageValue: 21,
+      paymentAccount: newContainer.paymentAccount,
+      paymentCuit: newContainer.paymentCuit,
+      paymentCbu: newContainer.paymentCbu,
+      paymentAlias: newContainer.paymentAlias,
+      transferData: [],
+      transferColumns: []
     };
 
     setContainers([...containers, container]);
-    setNewContainer({ title: '', description: '', template: 1, email: '', phone: '', textField: '', image: '' });
+    setNewContainer({ 
+      title: '', 
+      description: '', 
+      template: 1, 
+      email: '', 
+      phone: '', 
+      textField: '', 
+      image: '',
+      paymentAccount: '',
+      paymentCuit: '',
+      paymentCbu: '',
+      paymentAlias: ''
+    });
     setIsCreateDialogOpen(false);
   };
 
@@ -126,7 +160,11 @@ function Menu() {
       email: container.email || '',
       phone: container.phone || '',
       textField: container.textField || '',
-      image: container.image || ''
+      image: container.image || '',
+      paymentAccount: container.paymentAccount || '',
+      paymentCuit: container.paymentCuit || '',
+      paymentCbu: container.paymentCbu || '',
+      paymentAlias: container.paymentAlias || ''
     });
     setIsEditPropertiesDialogOpen(true);
   };

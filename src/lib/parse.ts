@@ -128,9 +128,10 @@ async function cleanupServerPDF(pdfName: string): Promise<void> {
 
 // Función auxiliar para fallback de texto
 async function shareTextFallback(container: Container, timestamp: number): Promise<void> {
-    const textContent = `FACTURA: ${container.title}
+    let textContent = `FACTURA: ${container.title}
 ${container.description || ''}
 
+PRODUCTOS/SERVICIOS:
 ${container.columns.map(col => col.name).join(' | ')}
 ${container.data.map(row =>
         container.columns.map(col =>
@@ -138,7 +139,25 @@ ${container.data.map(row =>
                 ? row[col.id].toFixed(2)
                 : row[col.id] || ''
         ).join(' | ')
-    ).join('\n')}
+    ).join('\n')}`;
+
+    // Agregar transferencias si existen
+    if (container.transferColumns && container.transferColumns.length > 0 && 
+        container.transferData && container.transferData.length > 0) {
+        textContent += `
+
+TRANSFERENCIAS:
+${container.transferColumns.map(col => col.name).join(' | ')}
+${container.transferData.map(row =>
+            container.transferColumns!.map(col =>
+                col.type === 'number' && typeof row[col.id] === 'number'
+                    ? row[col.id].toFixed(2)
+                    : row[col.id] || ''
+            ).join(' | ')
+        ).join('\n')}`;
+    }
+
+    textContent += `
 
 Generado: ${new Date().toLocaleDateString('es-ES')}`;
 
@@ -170,6 +189,10 @@ export async function ParseTable(
         percentageAmount?: number;
         finalTotal: number;
         hasPercentage: boolean;
+    },
+    transferData?: {
+        transferColumns: any[];
+        transferRows: any[];
     }
 ): Promise<string> {
     // Función auxiliar para formatear números
@@ -196,6 +219,36 @@ export async function ParseTable(
             const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
             return sum + numValue;
         }, 0);
+    };
+
+    // Función auxiliar para generar tabla de transferencias
+    const generateTransferTable = (): string => {
+        if (!transferData || !transferData.transferColumns.length || !transferData.transferRows.length) {
+            return '';
+        }
+
+        // Generar las filas de transferencia en formato de lista
+        const transferRows = transferData.transferRows.map(row => {
+            const rowDetails = transferData.transferColumns.map(column => {
+                const value = row[column.id];
+                const formattedValue = column.type === 'number' ? formatNumber(value, true) : String(value || '');
+                return `<strong>${column.name}:</strong> <span class="payment-highlight">${formattedValue}</span>`;
+            }).join('<br>');
+
+            return `
+                <div class="payment-card">
+                    <div class="payment-details">
+                        ${rowDetails}
+                    </div>
+                </div>`;
+        }).join('\n');
+
+        return `
+        <div class="payment-info">
+            <div class="payment-title">Transferencias Registradas</div>
+            ${transferRows}
+            <div class="decorative-element"></div>
+        </div>`;
     };
 
     // Crear headers de la tabla
@@ -252,25 +305,69 @@ export async function ParseTable(
     // Crear sección de información de pago
     const paymentInfo = `
         <div class="payment-info">
-            <div class="payment-title">Información de Pago</div>
-            <div class="payment-card">
-                <div class="payment-details">
-                    <strong>EFECTIVO / TRANSFERENCIA</strong><br><br>
-                    ${container.email ? `<strong>Email:</strong> ${container.email}<br>` : ''}
-                    ${container.phone ? `<strong>Teléfono:</strong> ${container.phone}<br>` : ''}
-                    <strong>Factura #:</strong> <span class="payment-highlight">${container.id}</span>
-                </div>
-            </div>
             <div class="decorative-element"></div>
-        </div>`;
+        </div>
+        
+        ${generateTransferTable()}`;
 
     // Construir el HTML completo
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>${container.title}</title>
-    <meta name="description" content="${container.description || 'Factura generada automáticamente'}">
+    <style>
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .header-image {
+            width: 300px !important;
+            height: 100px !important;
+            object-fit: cover !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 300px !important;
+            max-height: 100px !important;
+            display: block;
+            margin: 0 auto;
+        }
+        .payment-info {
+            margin-top: 20px;
+            padding: 15px;
+        }
+        .payment-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .payment-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .payment-details {
+            line-height: 1.6;
+        }
+        .payment-highlight {
+            background-color: #e8f4f8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .decorative-element {
+            height: 3px;
+            background: linear-gradient(90deg, #007bff, #28a745);
+            border-radius: 2px;
+            margin-top: 15px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -278,10 +375,6 @@ export async function ParseTable(
             <div class="logo-container">
                 <div class="logo">
                     <div class="logo-icon">${container.title.charAt(0).toUpperCase()}</div>
-                    <div>
-                        <div class="logo-text">${container.title}</div>
-                        <div class="logo-subtitle">${container.description || 'AUTOMATIZACIONES'}</div>
-                    </div>
                 </div>
             </div>
             ${container.image ? `

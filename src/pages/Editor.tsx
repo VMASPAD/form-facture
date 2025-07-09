@@ -10,7 +10,7 @@ import { ParseTable } from '@/lib/parse'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router'
 import { motion } from 'motion/react'
-import { Plus, Trash2, ArrowLeft, Save, FileText } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Save, FileText, CreditCard } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -33,6 +33,14 @@ function Editor() {
   const [editingRowData, setEditingRowData] = useState<Record<string, any>>({})
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const [isSharing, setIsSharing] = useState(false)
+  
+  // Estados para transferencias
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
+  const [isAddTransferColumnDialogOpen, setIsAddTransferColumnDialogOpen] = useState(false)
+  const [isEditTransferRowDialogOpen, setIsEditTransferRowDialogOpen] = useState(false)
+  const [editingTransferRow, setEditingTransferRow] = useState<DynamicRow | null>(null)
+  const [newTransferColumn, setNewTransferColumn] = useState({ name: '', type: 'text' as 'text' | 'number', sum: false })
+  const [editingTransferRowData, setEditingTransferRowData] = useState<Record<string, any>>({})
 
   // Load container from localStorage
   useEffect(() => {
@@ -186,6 +194,125 @@ function Editor() {
     })
   }
 
+  // Funciones para transferencias
+  const addTransferColumn = () => {
+    if (!container || newTransferColumn.name.trim() === '') return
+
+    const column: Column = {
+      id: Date.now().toString(),
+      name: newTransferColumn.name,
+      type: newTransferColumn.type,
+      sum: newTransferColumn.type === 'number' ? newTransferColumn.sum : undefined
+    }
+
+    const updatedContainer = {
+      ...container,
+      transferColumns: [...(container.transferColumns || []), column]
+    }
+
+    saveContainer(updatedContainer)
+    setNewTransferColumn({ name: '', type: 'text', sum: false })
+    setIsAddTransferColumnDialogOpen(false)
+  }
+
+  const deleteTransferColumn = (columnId: string) => {
+    if (!container) return
+
+    const updatedContainer = {
+      ...container,
+      transferColumns: (container.transferColumns || []).filter(col => col.id !== columnId),
+      transferData: (container.transferData || []).map(row => {
+        const newRow = { ...row }
+        delete newRow[columnId]
+        return newRow
+      })
+    }
+
+    saveContainer(updatedContainer)
+  }
+
+  const toggleTransferColumnSum = (columnId: string) => {
+    if (!container) return
+
+    const updatedContainer = {
+      ...container,
+      transferColumns: (container.transferColumns || []).map(col => 
+        col.id === columnId && col.type === 'number' 
+          ? { ...col, sum: !col.sum }
+          : col
+      )
+    }
+
+    saveContainer(updatedContainer)
+  }
+
+  const addTransferRow = () => {
+    if (!container) return
+
+    const newRow: DynamicRow = {
+      id: Date.now().toString()
+    }
+
+    // Initialize with default values based on column types
+    ;(container.transferColumns || []).forEach(col => {
+      newRow[col.id] = col.type === 'number' ? 0 : ''
+    })
+
+    const updatedContainer = {
+      ...container,
+      transferData: [...(container.transferData || []), newRow]
+    }
+
+    saveContainer(updatedContainer)
+  }
+
+  const editTransferRow = (row: DynamicRow) => {
+    setEditingTransferRow(row)
+    setEditingTransferRowData({ ...row })
+    setIsEditTransferRowDialogOpen(true)
+  }
+
+  const saveEditTransferRow = () => {
+    if (!container || !editingTransferRow) return
+
+    const updatedContainer = {
+      ...container,
+      transferData: (container.transferData || []).map(row => 
+        row.id === editingTransferRow.id ? editingTransferRowData : row
+      )
+    }
+
+    saveContainer(updatedContainer)
+    setIsEditTransferRowDialogOpen(false)
+    setEditingTransferRow(null)
+    setEditingTransferRowData({})
+  }
+
+  const deleteTransferRow = (rowId: string) => {
+    if (!container) return
+
+    const updatedContainer = {
+      ...container,
+      transferData: (container.transferData || []).filter(row => row.id !== rowId)
+    }
+
+    saveContainer(updatedContainer)
+  }
+
+  const handleEditTransferRowChange = (columnId: string, value: string) => {
+    const column = container?.transferColumns?.find(col => col.id === columnId)
+    let processedValue: any = value
+
+    if (column?.type === 'number') {
+      processedValue = value === '' ? 0 : parseFloat(value) || 0
+    }
+
+    setEditingTransferRowData({
+      ...editingTransferRowData,
+      [columnId]: processedValue
+    })
+  }
+
   // Funciones auxiliares para calcular totales
   const calculateColumnSum = (columnId: string): number => {
     if (!container) return 0
@@ -235,7 +362,10 @@ function Editor() {
         hasPercentage: container.percentageEnabled || false
       };
       
-      const htmlString = await ParseTable(container, false, totalInfo);
+      const htmlString = await ParseTable(container, false, totalInfo, {
+        transferColumns: container.transferColumns || [],
+        transferRows: container.transferData || []
+      });
       console.log('HTML generado:', htmlString);
       
       // Preparar el payload para la API con el total final
@@ -273,11 +403,7 @@ function Editor() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success(`Factura generada exitosamente. Total: ${new Intl.NumberFormat("es-ES", {
-        style: "currency",
-        currency: "ARS",
-        minimumFractionDigits: 2,
-      }).format(finalTotal)}`);
+      toast.success(`Factura generada exitosamente.`);
       console.log('PDF generado y descargado exitosamente');
       await handleDeletePDF()
       
@@ -286,7 +412,10 @@ function Editor() {
       toast.error("Error al generar PDF. Se descargó HTML como alternativa.");
       
       // Fallback: descargar HTML si falla la API
-      const htmlString = await ParseTable(container);
+      const htmlString = await ParseTable(container, false, undefined, {
+        transferColumns: container.transferColumns || [],
+        transferRows: container.transferData || []
+      });
       const blob = new Blob([htmlString], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       
@@ -323,7 +452,10 @@ function Editor() {
         hasPercentage: container.percentageEnabled || false
       };
       
-      await ParseTable(container, true, totalInfo);
+      await ParseTable(container, true, totalInfo, {
+        transferColumns: container.transferColumns || [],
+        transferRows: container.transferData || []
+      });
       toast.success(`Archivo compartido exitosamente. Total: ${new Intl.NumberFormat("es-ES", {
         style: "currency",
         currency: "ARS",
@@ -415,6 +547,14 @@ function Editor() {
             </Button>
             <Button
               variant="outline"
+              onClick={() => setIsTransferDialogOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <CreditCard className="h-4 w-4" />
+              Transferencias
+            </Button>
+            <Button
+              variant="outline"
               className="flex items-center gap-2"
               onClick={() => {
                 handleGenerateHTML();
@@ -425,15 +565,6 @@ function Editor() {
               <FileText className="h-4 w-4" />
               {isGeneratingPDF ? 'Generando PDF...' : 'Generar PDF'}
             </Button>
-            {/* <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={handleDeletePDF}
-              disabled={isDeletingPDF}
-            >
-              <Trash className="h-4 w-4" />
-              {isDeletingPDF ? 'Eliminando PDF...' : 'Eliminar PDF'}
-            </Button> */}
           </div>
         </div>
 
@@ -583,6 +714,197 @@ function Editor() {
                 Cancelar
               </Button>
               <Button onClick={saveEditRow} className="flex items-center gap-2">
+                <Save className="h-4 w-4" />
+                Guardar Cambios
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Transfer Dialog */}
+        <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
+          <DialogContent className="max-w-6xl">
+            <DialogHeader>
+              <DialogTitle>Gestión de Transferencias</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6">
+              {/* Transfer Table Actions */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddTransferColumnDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Agregar Columna
+                </Button>
+              </div>
+
+              {/* Transfer Table */}
+              {(container.transferColumns || []).length > 0 ? (
+                <DataTable
+                  columns={createDynamicColumns(container.transferColumns || [], editTransferRow, deleteTransferRow)}
+                  data={container.transferData || []}
+                  containerColumns={container.transferColumns || []}
+                  onAddRow={addTransferRow}
+                  showAddButton={true}
+                  container={{
+                    ...container,
+                    columns: container.transferColumns,
+                    data: container.transferData,
+                    percentageEnabled: false // Las transferencias no tienen porcentajes
+                  }}
+                  onUpdateContainer={(updatedContainer) => {
+                    saveContainer({
+                      ...container,
+                      transferData: updatedContainer.data,
+                      transferColumns: updatedContainer.columns
+                    })
+                  }}
+                />
+              ) : (
+                <div className="text-center py-12 border rounded-lg bg-muted/20">
+                  <p className="text-muted-foreground mb-4">
+                    No hay columnas de transferencia definidas aún
+                  </p>
+                  <Button onClick={() => setIsAddTransferColumnDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Crear Primera Columna de Transferencia
+                  </Button>
+                </div>
+              )}
+
+              {/* Transfer Column Management */}
+              {(container.transferColumns || []).length > 0 && (
+                <div className="bg-card border rounded-lg p-4">
+                  <h3 className="font-semibold mb-3">Gestión de Columnas de Transferencia</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {(container.transferColumns || []).map((column) => (
+                      <div key={column.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium">{column.name}</p>
+                          <p className="text-sm text-muted-foreground capitalize">{column.type}</p>
+                          {column.type === 'number' && (
+                            <div className="flex items-center gap-2 mt-1">
+                              <Checkbox
+                                id={`transfer-sum-${column.id}`}
+                                checked={column.sum || false}
+                                onCheckedChange={() => toggleTransferColumnSum(column.id)}
+                              />
+                              <Label htmlFor={`transfer-sum-${column.id}`} className="text-xs">
+                                Sumar columna
+                              </Label>
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteTransferColumn(column.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsTransferDialogOpen(false)}>
+                Cerrar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Transfer Column Dialog */}
+        <Dialog open={isAddTransferColumnDialogOpen} onOpenChange={setIsAddTransferColumnDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Agregar Nueva Columna de Transferencia</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="transfer-column-name">Nombre de la Columna</Label>
+                <Input
+                  id="transfer-column-name"
+                  value={newTransferColumn.name}
+                  onChange={(e) => setNewTransferColumn({ ...newTransferColumn, name: e.target.value })}
+                  placeholder="Ej: Banco, Monto, Fecha"
+                />
+              </div>
+              <div>
+                <Label htmlFor="transfer-column-type">Tipo de Dato</Label>
+                <Select 
+                  value={newTransferColumn.type}
+                  onValueChange={(value) => setNewTransferColumn({ 
+                    ...newTransferColumn, 
+                    type: value as 'text' | 'number',
+                    sum: value === 'text' ? false : newTransferColumn.sum
+                  })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona el tipo de dato" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="text">Texto</SelectItem>
+                    <SelectItem value="number">Número</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {newTransferColumn.type === 'number' && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="transfer-column-sum"
+                    checked={newTransferColumn.sum}
+                    onCheckedChange={(checked) => setNewTransferColumn({ ...newTransferColumn, sum: !!checked })}
+                  />
+                  <Label htmlFor="transfer-column-sum">
+                    Sumar todos los valores de esta columna
+                  </Label>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddTransferColumnDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={addTransferColumn}>
+                Agregar Columna
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Transfer Row Dialog */}
+        <Dialog open={isEditTransferRowDialogOpen} onOpenChange={setIsEditTransferRowDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Editar Fila de Transferencia</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {(container.transferColumns || []).map((column) => (
+                <div key={column.id}>
+                  <Label htmlFor={`edit-transfer-${column.id}`}>
+                    {column.name} ({column.type})
+                  </Label>
+                  <Input
+                    id={`edit-transfer-${column.id}`}
+                    type={column.type === 'number' ? 'number' : 'text'}
+                    value={editingTransferRowData[column.id] || ''}
+                    onChange={(e) => handleEditTransferRowChange(column.id, e.target.value)}
+                    placeholder={`Ingresa ${column.type === 'number' ? 'un número' : 'texto'}`}
+                  />
+                </div>
+              ))}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditTransferRowDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={saveEditTransferRow} className="flex items-center gap-2">
                 <Save className="h-4 w-4" />
                 Guardar Cambios
               </Button>
