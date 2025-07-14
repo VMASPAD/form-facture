@@ -456,11 +456,7 @@ function Editor() {
         transferColumns: container.transferColumns || [],
         transferRows: container.transferData || []
       });
-      toast.success(`Archivo compartido exitosamente. Total: ${new Intl.NumberFormat("es-ES", {
-        style: "currency",
-        currency: "ARS",
-        minimumFractionDigits: 2,
-      }).format(finalTotal)}`);
+      toast.success(`Archivo compartido exitosamente.`);
     } catch (error) {
       console.error('Error al compartir archivo:', error);
       toast.error("Error al compartir archivo");
@@ -529,6 +525,18 @@ function Editor() {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <h1 className="text-3xl font-bold">{container.title}</h1>
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => {
+                handleGenerateHTML();
+                handleShareFile();
+              }}
+              disabled={isGeneratingPDF}
+            >
+              <FileText className="h-4 w-4" />
+              {isGeneratingPDF ? 'Generando PDF...' : 'Generar PDF'}
+            </Button>
             </div>
             <p className="text-muted-foreground">{container.description}</p>
             <p className="text-sm text-muted-foreground mt-1">
@@ -552,18 +560,6 @@ function Editor() {
             >
               <CreditCard className="h-4 w-4" />
               Transferencias
-            </Button>
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => {
-                handleGenerateHTML();
-                handleShareFile();
-              }}
-              disabled={isGeneratingPDF}
-            >
-              <FileText className="h-4 w-4" />
-              {isGeneratingPDF ? 'Generando PDF...' : 'Generar PDF'}
             </Button>
           </div>
         </div>

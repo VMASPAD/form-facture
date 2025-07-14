@@ -227,11 +227,7 @@ export function DataTable<TData, TValue>({
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Subtotal:</span>
             <span className="font-medium">
-              {new Intl.NumberFormat("es-ES", {
-                style: "currency",
-                currency: "ARS",
-                minimumFractionDigits: 2,
-              }).format(calculateTotalSum())}
+              {calculateTotalSum()}
             </span>
           </div>
 
@@ -261,11 +257,7 @@ export function DataTable<TData, TValue>({
                 />
                 <span className="text-sm text-muted-foreground">%</span>
                 <span className="text-sm font-medium ml-4">
-                  = {new Intl.NumberFormat("es-ES", {
-                    style: "currency",
-                    currency: "ARS",
-                    minimumFractionDigits: 2,
-                  }).format(calculatePercentageAmount(calculateTotalSum()))}
+                  = {calculatePercentageAmount(calculateTotalSum())}
                 </span>
               </div>
             )}
@@ -275,11 +267,7 @@ export function DataTable<TData, TValue>({
           <div className="flex justify-between items-center border-t pt-3">
             <span className="text-lg font-semibold">Total Final:</span>
             <span className="text-lg font-bold text-primary">
-              {new Intl.NumberFormat("es-ES", {
-                style: "currency",
-                currency: "ARS",
-                minimumFractionDigits: 2,
-              }).format(calculateFinalTotal())}
+              {calculateFinalTotal()}
             </span>
           </div>
         </div>

@@ -201,16 +201,11 @@ export async function ParseTable(
             return String(value || '');
         }
         const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
-        return new Intl.NumberFormat("es-ES", {
-            style: "currency",
-            currency: "ARS",
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(numValue);
+        return `${numValue}`
     };
 
     // Función auxiliar para calcular sumas de columnas
-    const calculateColumnSum = (columnId: string): number => {
+/*     const calculateColumnSum = (columnId: string): number => {
         const column = container.columns.find(col => col.id === columnId);
         if (!column || column.type !== 'number' || !column.sum) return 0;
 
@@ -219,7 +214,7 @@ export async function ParseTable(
             const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
             return sum + numValue;
         }, 0);
-    };
+    }; */
 
     // Función auxiliar para generar tabla de transferencias
     const generateTransferTable = (): string => {
