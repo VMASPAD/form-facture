@@ -10,7 +10,7 @@ import { ParseTable } from '@/lib/parse'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router'
 import { motion } from 'motion/react'
-import { Plus, Trash2, ArrowLeft, Save, FileText, CreditCard } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Save, FileText, CreditCard, ChevronUp, ChevronDown, Edit } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -41,6 +41,11 @@ function Editor() {
   const [editingTransferRow, setEditingTransferRow] = useState<DynamicRow | null>(null)
   const [newTransferColumn, setNewTransferColumn] = useState({ name: '', type: 'text' as 'text' | 'number', sum: false })
   const [editingTransferRowData, setEditingTransferRowData] = useState<Record<string, any>>({})
+  
+  // Estados para editar columnas
+  const [isEditColumnDialogOpen, setIsEditColumnDialogOpen] = useState(false)
+  const [editingColumn, setEditingColumn] = useState<Column | null>(null)
+  const [editingColumnName, setEditingColumnName] = useState('')
 
   // Load container from localStorage
   useEffect(() => {
@@ -311,6 +316,54 @@ function Editor() {
       ...editingTransferRowData,
       [columnId]: processedValue
     })
+  }
+
+  // Funciones para gestión de columnas
+  const moveColumn = (columnId: string, direction: 'up' | 'down') => {
+    if (!container) return
+
+    const columns = [...container.columns]
+    const currentIndex = columns.findIndex(col => col.id === columnId)
+    
+    if (currentIndex === -1) return
+    
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    
+    if (newIndex < 0 || newIndex >= columns.length) return
+    
+    // Intercambiar posiciones
+    [columns[currentIndex], columns[newIndex]] = [columns[newIndex], columns[currentIndex]]
+    
+    const updatedContainer = {
+      ...container,
+      columns
+    }
+
+    saveContainer(updatedContainer)
+  }
+
+  const openEditColumn = (column: Column) => {
+    setEditingColumn(column)
+    setEditingColumnName(column.name)
+    setIsEditColumnDialogOpen(true)
+  }
+
+  const saveEditColumn = () => {
+    if (!container || !editingColumn || editingColumnName.trim() === '') return
+
+    const updatedContainer = {
+      ...container,
+      columns: container.columns.map(col => 
+        col.id === editingColumn.id 
+          ? { ...col, name: editingColumnName.trim() }
+          : col
+      )
+    }
+
+    saveContainer(updatedContainer)
+    setIsEditColumnDialogOpen(false)
+    setEditingColumn(null)
+    setEditingColumnName('')
   }
 
   // Funciones auxiliares para calcular totales
@@ -592,11 +645,18 @@ function Editor() {
           <div className="bg-card border rounded-lg p-4">
             <h3 className="font-semibold mb-3">Gestión de Columnas</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {container.columns.map((column) => (
+              {container.columns.map((column, index) => (
                 <div key={column.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex-1">
-                    <p className="font-medium">{column.name}</p>
-                    <p className="text-sm text-muted-foreground capitalize">{column.type}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{column.name}</span>
+                      <span className="text-xs text-muted-foreground capitalize">({column.type})</span>
+                      {column.type === 'number' && column.sum && (
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                          SUMA
+                        </span>
+                      )}
+                    </div>
                     {column.type === 'number' && (
                       <div className="flex items-center gap-2 mt-1">
                         <Checkbox
@@ -610,14 +670,49 @@ function Editor() {
                       </div>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteColumn(column.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {/* Botones para mover */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveColumn(column.id, 'up')}
+                      disabled={index === 0}
+                      className="p-1 h-8 w-8"
+                      title="Mover hacia arriba"
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveColumn(column.id, 'down')}
+                      disabled={index === container.columns.length - 1}
+                      className="p-1 h-8 w-8"
+                      title="Mover hacia abajo"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                    {/* Botón para editar nombre */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openEditColumn(column)}
+                      className="p-1 h-8 w-8"
+                      title="Editar nombre"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    {/* Botón para eliminar */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteColumn(column.id)}
+                      className="text-destructive hover:text-destructive p-1 h-8 w-8"
+                      title="Eliminar columna"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -901,6 +996,43 @@ function Editor() {
                 Cancelar
               </Button>
               <Button onClick={saveEditTransferRow} className="flex items-center gap-2">
+                <Save className="h-4 w-4" />
+                Guardar Cambios
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Column Dialog */}
+        <Dialog open={isEditColumnDialogOpen} onOpenChange={setIsEditColumnDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Nombre de Columna</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-column-name">Nombre de la Columna</Label>
+                <Input
+                  id="edit-column-name"
+                  value={editingColumnName}
+                  onChange={(e) => setEditingColumnName(e.target.value)}
+                  placeholder="Ingresa el nuevo nombre"
+                />
+              </div>
+              {editingColumn && (
+                <div className="text-sm text-muted-foreground">
+                  <p>Tipo: <span className="capitalize">{editingColumn.type}</span></p>
+                  {editingColumn.type === 'number' && editingColumn.sum && (
+                    <p>Esta columna está configurada para sumarse</p>
+                  )}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditColumnDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={saveEditColumn} className="flex items-center gap-2">
                 <Save className="h-4 w-4" />
                 Guardar Cambios
               </Button>

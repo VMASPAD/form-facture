@@ -128,8 +128,7 @@ async function cleanupServerPDF(pdfName: string): Promise<void> {
 
 // Función auxiliar para fallback de texto
 async function shareTextFallback(container: Container, timestamp: number): Promise<void> {
-    let textContent = `FACTURA: ${container.title}
-${container.description || ''}
+    let textContent = `FACTURA: ${container.title}${container.description || ''}
 
 PRODUCTOS/SERVICIOS:
 ${container.columns.map(col => col.name).join(' | ')}
@@ -140,9 +139,9 @@ ${container.data.map(row =>
                 : row[col.id] || ''
         ).join(' | ')
     ).join('\n')}`;
-
+console.log(textContent)
     // Agregar transferencias si existen
-    if (container.transferColumns && container.transferColumns.length > 0 && 
+    if (container.transferColumns && container.transferColumns.length > 0 &&
         container.transferData && container.transferData.length > 0) {
         textContent += `
 
@@ -205,16 +204,16 @@ export async function ParseTable(
     };
 
     // Función auxiliar para calcular sumas de columnas
-/*     const calculateColumnSum = (columnId: string): number => {
-        const column = container.columns.find(col => col.id === columnId);
-        if (!column || column.type !== 'number' || !column.sum) return 0;
-
-        return container.data.reduce((sum, row: any) => {
-            const value = row[columnId];
-            const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
-            return sum + numValue;
-        }, 0);
-    }; */
+    /*     const calculateColumnSum = (columnId: string): number => {
+            const column = container.columns.find(col => col.id === columnId);
+            if (!column || column.type !== 'number' || !column.sum) return 0;
+    
+            return container.data.reduce((sum, row: any) => {
+                const value = row[columnId];
+                const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
+                return sum + numValue;
+            }, 0);
+        }; */
 
     // Función auxiliar para generar tabla de transferencias
     const generateTransferTable = (): string => {
@@ -269,7 +268,8 @@ export async function ParseTable(
             <div class="client-details">
                 ${container.email ? `<strong>Email:</strong> ${container.email}<br>` : ''}
                 ${container.phone ? `<strong>Teléfono:</strong> ${container.phone}<br>` : ''}
-                ${container.textField ? `<strong>Información:</strong> ${container.textField}` : ''}
+                ${container.textField ? `<strong>Información:</strong> ${container.textField}<br>` : ''}
+                <p>${container.description || ''}</p>
             </div>
             <div class="date-badge">${new Date().toLocaleDateString('es-ES')}</div>
         </div>`;
@@ -282,7 +282,7 @@ export async function ParseTable(
             <div class="totals-grid">
                 <div class="totals-row">
                     <div class="totals-label subtotal-label">Subtotal</div>
-                    <div class="totals-value subtotal-value">${formatNumber(totalInfo.subtotal, true)}</div>
+                    <div class="totals-value subtotal-value">${formatNumber(totalInfo.subtotal, true)} $</div>
                 </div>
                 ${totalInfo.hasPercentage && totalInfo.percentage && totalInfo.percentageAmount ? `
                 <div class="totals-row">
@@ -291,7 +291,7 @@ export async function ParseTable(
                 </div>` : ''}
                 <div class="totals-row total-row">
                     <div class="totals-label total-label">Total</div>
-                    <div class="totals-value total-value">${formatNumber(totalInfo.finalTotal, true)}</div>
+                    <div class="totals-value total-value">${formatNumber(totalInfo.finalTotal, true)} $</div>
                 </div>
             </div>
         </div>`;
@@ -376,7 +376,7 @@ export async function ParseTable(
             <div class="image-container">
                 <img src="${container.image}" alt="Imagen del presupuesto" class="header-image">
             </div>` : ''}
-            <h1 class="main-title">PRESUPUESTO</h1>
+            <h1 class="main-title">FACTURA</h1>
         </div>
         
         ${clientInfo}
@@ -396,7 +396,7 @@ ${tableRows}
         
         ${totalsSection}
         
-        ${paymentInfo}
+       
     </div>
 </body>
 </html>`;

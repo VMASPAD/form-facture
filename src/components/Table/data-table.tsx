@@ -227,7 +227,7 @@ export function DataTable<TData, TValue>({
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Subtotal:</span>
             <span className="font-medium">
-              {calculateTotalSum()}
+              {calculateTotalSum()} $
             </span>
           </div>
 
@@ -267,7 +267,7 @@ export function DataTable<TData, TValue>({
           <div className="flex justify-between items-center border-t pt-3">
             <span className="text-lg font-semibold">Total Final:</span>
             <span className="text-lg font-bold text-primary">
-              {calculateFinalTotal()}
+              {calculateFinalTotal()} $
             </span>
           </div>
         </div>

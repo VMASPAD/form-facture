@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select"
 import { DialogDescription } from '@radix-ui/react-dialog'
 import Templates from '@/components/Templates'
+import { Textarea } from '@/components/ui/textarea'
 
 export interface Container {
   id: string;
@@ -223,12 +224,12 @@ function Menu() {
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
-                Nuevo Contenedor
+                Nueva Factura
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Crear Nuevo Contenedor</DialogTitle>
+                <DialogTitle>Crear Nueva Factura</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
@@ -325,7 +326,7 @@ function Menu() {
                   Cancelar
                 </Button>
                 <Button onClick={createContainer}>
-                  Crear Contenedor
+                  Crear Factura
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -374,7 +375,7 @@ function Menu() {
               </p>
               {!searchTerm && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  Crea tu primer contenedor para comenzar
+                  Crea tu primera factura para comenzar
                 </p>
               )}
             </motion.div>
@@ -414,7 +415,7 @@ function Menu() {
                       <Link to={`/editor?id=${container.id}`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
                           <Edit className="h-3 w-3" />
-                          Editar
+                          Ver
                         </Button>
                       </Link>
                       <Button
@@ -424,7 +425,7 @@ function Menu() {
                         className="flex items-center gap-2"
                       >
                         <Edit className="h-3 w-3" />
-                        Props
+                        Editar
                       </Button>
                       <Dialog>
                         <DialogTrigger asChild>
@@ -443,7 +444,7 @@ function Menu() {
                               onClick={() => deleteContainer(container.id)}
                               className="text-destructive hover:text-destructive"
                             >
-                              Eliminar contenedor
+                              Eliminar Factura
                             </Button>
                           </DialogFooter>
                         </DialogContent>
@@ -460,7 +461,7 @@ function Menu() {
         <Dialog open={isEditPropertiesDialogOpen} onOpenChange={setIsEditPropertiesDialogOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Editar Propiedades del Contenedor</DialogTitle>
+              <DialogTitle>Editar Propiedades del Factura</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               <div>
@@ -474,7 +475,7 @@ function Menu() {
               </div>
               <div>
                 <Label htmlFor="edit-description">Descripción</Label>
-                <Input
+                <Textarea
                   id="edit-description"
                   value={containerProperties.description}
                   onChange={(e) => setContainerProperties({ ...containerProperties, description: e.target.value })}
