@@ -304,7 +304,7 @@ export async function ParseTable(
         </div>
         
         ${generateTransferTable()}`;
-
+console.log(paymentInfo)
     // Construir el HTML completo
     const html = `<!DOCTYPE html>
 <html lang="es">
