@@ -308,15 +308,21 @@ function Menu() {
                       <SelectValue placeholder="Selecciona una plantilla" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">Plantilla Básica</SelectItem>
-                      <SelectItem value="2">Plantilla Financiera</SelectItem>
-                      <SelectItem value="3">Plantilla Inventario</SelectItem>
-                      <SelectItem value="4">Azul Corporativo</SelectItem>
-                      <SelectItem value="5">Verde Suave</SelectItem>
-                      <SelectItem value="6">Gris Elegante</SelectItem>
-                      <SelectItem value="7">Púrpura Moderno</SelectItem>
-                      <SelectItem value="8">Naranja Suave</SelectItem>
-                      <SelectItem value="9">Rosa Profesional</SelectItem>
+                      <SelectItem value="1">Clasico</SelectItem>
+                      <SelectItem value="2">CyberPunk</SelectItem>
+                      <SelectItem value="3">Artistico</SelectItem>
+                      <SelectItem value="4">Minimalista</SelectItem>
+                      <SelectItem value="5">Gotico</SelectItem>
+                      <SelectItem value="6">SCIFI</SelectItem>
+                      <SelectItem value="7">PlayFul</SelectItem>
+                      <SelectItem value="8">Rustico</SelectItem>
+                      <SelectItem value="9">Formal</SelectItem>
+                      <SelectItem value="10">Futurista</SelectItem>
+                      <SelectItem value="11">Formal Colorido</SelectItem>
+                      <SelectItem value="12">Formal Gris</SelectItem>
+                      <SelectItem value="13">Formal Rojo</SelectItem>
+                      <SelectItem value="14">Formal Celeste</SelectItem>
+                      <SelectItem value="15">Formal Azul</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -491,17 +497,23 @@ function Menu() {
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona una plantilla" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Plantilla Básica</SelectItem>
-                    <SelectItem value="2">Plantilla Financiera</SelectItem>
-                    <SelectItem value="3">Plantilla Inventario</SelectItem>
-                    <SelectItem value="4">Azul Corporativo</SelectItem>
-                    <SelectItem value="5">Verde Suave</SelectItem>
-                    <SelectItem value="6">Gris Elegante</SelectItem>
-                    <SelectItem value="7">Púrpura Moderno</SelectItem>
-                    <SelectItem value="8">Naranja Suave</SelectItem>
-                    <SelectItem value="9">Rosa Profesional</SelectItem>
-                  </SelectContent>
+                    <SelectContent>
+                      <SelectItem value="1">Clasico</SelectItem>
+                      <SelectItem value="2">CyberPunk</SelectItem>
+                      <SelectItem value="3">Artistico</SelectItem>
+                      <SelectItem value="4">Minimalista</SelectItem>
+                      <SelectItem value="5">Gotico</SelectItem>
+                      <SelectItem value="6">SCIFI</SelectItem>
+                      <SelectItem value="7">PlayFul</SelectItem>
+                      <SelectItem value="8">Rustico</SelectItem>
+                      <SelectItem value="9">Formal</SelectItem>
+                      <SelectItem value="10">Futurista</SelectItem>
+                      <SelectItem value="11">Formal Colorido</SelectItem>
+                      <SelectItem value="12">Formal Gris</SelectItem>
+                      <SelectItem value="13">Formal Rojo</SelectItem>
+                      <SelectItem value="14">Formal Celeste</SelectItem>
+                      <SelectItem value="15">Formal Azul</SelectItem>
+                    </SelectContent>
                 </Select>
               </div>
               <div>
