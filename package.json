@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "abb": "npm run tauri android build -- --aab && \"C:\\Program Files\\Java\\jdk-21\\bin\\jarsigner\" -verbose -sigalg SHA256withRSA -digestalg SHA256 -keystore Templario_19.jks \"y:\\AtlasProyects\\form-facture\\src-tauri\\gen\\android\\app\\build\\outputs\\bundle\\universalRelease\\app-universal-release.aab\" Templario_AM19"
   },
   "dependencies": {
     "@buildyourwebapp/tauri-plugin-sharesheet": "^0.0.1",

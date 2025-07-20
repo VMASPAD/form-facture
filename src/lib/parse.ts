@@ -12,10 +12,11 @@ export async function shareInvoiceFile(container: Container, htmlContent: string
 
         // Preparar el payload para la API
         const payload = {
+            template: container.template,
             name: `${container.title.replace(/\s+/g, '_')}_factura_${timestamp}`,
             content: htmlContent
         };
-
+        console.log('Payload para generación de PDF:', JSON.stringify(payload, null, 2));
         // Generar PDF en el servidor
         const response = await fetch('https://pdfconvertor.hermesbackend.xyz/generate-pdf', {
             method: 'POST',

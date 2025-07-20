@@ -424,11 +424,11 @@ function Editor() {
       // Preparar el payload para la API con el total final
       const payload = {
         name: `${container.title.replace(/\s+/g, '_')}_factura`,
-        content: htmlString,
         template: container.template,
-        totalAmount: finalTotal // Enviar el total final al servidor
+        totalAmount: finalTotal, // Enviar el total final al servidor
+        content: htmlString,
       };
-      console.log(payload)
+      console.log("payload:", JSON.stringify(payload));
       // Hacer fetch a la API para generar PDF
       const response = await fetch('https://pdfconvertor.hermesbackend.xyz/generate-pdf', {
         method: 'POST',

@@ -73,7 +73,7 @@ function Menu() {
   const [containerProperties, setContainerProperties] = useState({
     title: '',
     description: '',
-    template: 1,
+    template: 14,
     email: '',
     phone: '',
     textField: '',
