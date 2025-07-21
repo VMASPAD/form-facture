@@ -242,7 +242,7 @@ function Menu() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="description">Descripción</Label>
+                  <Label htmlFor="description">Dirección</Label>
                   <Input
                     id="description"
                     value={newContainer.description}
@@ -271,7 +271,7 @@ function Menu() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="textField">Campo de Texto</Label>
+                  <Label htmlFor="textField">Tipo de Entidad</Label>
                   <Input
                     id="textField"
                     value={newContainer.textField}
@@ -480,7 +480,7 @@ function Menu() {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-description">Descripción</Label>
+                <Label htmlFor="edit-description">Dirección</Label>
                 <Textarea
                   id="edit-description"
                   value={containerProperties.description}
@@ -537,7 +537,7 @@ function Menu() {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-textField">Campo de Texto</Label>
+                <Label htmlFor="edit-textField">Tipo de Entidad</Label>
                 <Input
                   id="edit-textField"
                   value={containerProperties.textField}

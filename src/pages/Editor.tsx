@@ -393,7 +393,7 @@ function Editor() {
 
   const calculateFinalTotal = (): number => {
     const baseTotal = calculateTotalSum()
-    return baseTotal + calculatePercentageAmount(baseTotal)
+    return parseFloat((baseTotal + calculatePercentageAmount(baseTotal)).toFixed(2))
   }
 
   const handleGenerateHTML = async () => {
@@ -612,7 +612,7 @@ function Editor() {
               className="flex items-center gap-2"
             >
               <CreditCard className="h-4 w-4" />
-              Transferencias
+              Formas de Pago
             </Button>
           </div>
         </div>

@@ -110,7 +110,7 @@ export function DataTable<TData, TValue>({
   // Calculate final total (sum + percentage)
   const calculateFinalTotal = (): number => {
     const baseTotal = calculateTotalSum()
-    return baseTotal + calculatePercentageAmount(baseTotal)
+    return parseFloat((baseTotal + calculatePercentageAmount(baseTotal)).toFixed(2))
   }
 
   const hasSumColumns = containerColumns.some(col => col.type === 'number' && col.sum)
@@ -201,7 +201,7 @@ export function DataTable<TData, TValue>({
                         Total: {new Intl.NumberFormat("es-ES", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
-                        }).format(sum)} $
+                        }).format(sum)} $ USD
                       </TableCell>
                     )
                   }
@@ -227,7 +227,7 @@ export function DataTable<TData, TValue>({
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Subtotal:</span>
             <span className="font-medium">
-              {calculateTotalSum()} $
+              {calculateTotalSum()} $ USD
             </span>
           </div>
 
@@ -267,7 +267,7 @@ export function DataTable<TData, TValue>({
           <div className="flex justify-between items-center border-t pt-3">
             <span className="text-lg font-semibold">Total Final:</span>
             <span className="text-lg font-bold text-primary">
-              {calculateFinalTotal()} $
+              {calculateFinalTotal()} $ USD
             </span>
           </div>
         </div>

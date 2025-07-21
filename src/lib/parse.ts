@@ -262,14 +262,13 @@ export async function ParseTable(
         return `                    <tr>\n${cells}\n                    </tr>`;
     }).join('\n');
 
-    // Crear información del cliente
     const clientInfo = `
         <div class="client-info">
             <div class="client-section">${container.title}</div>
             <div class="client-details">
                 ${container.email ? `<strong>Email:</strong> ${container.email}<br>` : ''}
                 ${container.phone ? `<strong>Teléfono:</strong> ${container.phone}<br>` : ''}
-                ${container.textField ? `<strong>Información:</strong> ${container.textField}<br>` : ''}
+                ${container.textField ? `<strong>Tipo de Persona:</strong> ${container.textField}<br>` : ''}
                 <p>${container.description || ''}</p>
             </div>
             <div class="date-badge">${new Date().toLocaleDateString('es-ES')}</div>
@@ -283,7 +282,7 @@ export async function ParseTable(
             <div class="totals-grid">
                 <div class="totals-row">
                     <div class="totals-label subtotal-label">Subtotal</div>
-                    <div class="totals-value subtotal-value">${formatNumber(totalInfo.subtotal, true)} $</div>
+                    <div class="totals-value subtotal-value">${formatNumber(totalInfo.subtotal, true)} $ USD</div>
                 </div>
                 ${totalInfo.hasPercentage && totalInfo.percentage && totalInfo.percentageAmount ? `
                 <div class="totals-row">
@@ -292,7 +291,7 @@ export async function ParseTable(
                 </div>` : ''}
                 <div class="totals-row total-row">
                     <div class="totals-label total-label">Total</div>
-                    <div class="totals-value total-value">${formatNumber(totalInfo.finalTotal, true)} $</div>
+                    <div class="totals-value total-value">${formatNumber(totalInfo.finalTotal, true)} $ USD</div>
                 </div>
             </div>
         </div>`;
@@ -397,8 +396,8 @@ ${tableRows}
         
         ${totalsSection}
         
-       
     </div>
+       ${paymentInfo}
 </body>
 </html>`;
 
