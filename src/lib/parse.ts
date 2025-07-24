@@ -222,28 +222,18 @@ export async function ParseTable(
             return '';
         }
 
-        // Generar las filas de transferencia en formato de lista
-        const transferRows = transferData.transferRows.map(row => {
-            const rowDetails = transferData.transferColumns.map(column => {
+        // Generar las filas de transferencia según template.html
+        const transferDetails = transferData.transferRows.map(row => {
+            const rowData = transferData.transferColumns.map(column => {
                 const value = row[column.id];
                 const formattedValue = column.type === 'number' ? formatNumber(value, true) : String(value || '');
-                return `<strong>${column.name}:</strong> <span class="payment-highlight">${formattedValue}</span>`;
+                return `<strong>${column.name}:</strong> ${formattedValue}`;
             }).join('<br>');
 
-            return `
-                <div class="payment-card">
-                    <div class="payment-details">
-                        ${rowDetails}
-                    </div>
-                </div>`;
-        }).join('\n');
+            return rowData;
+        }).join('<br><br>');
 
-        return `
-        <div class="payment-info">
-            <div class="payment-title">Transferencias Registradas</div>
-            ${transferRows}
-            <div class="decorative-element"></div>
-        </div>`;
+        return transferDetails;
     };
 
     // Crear headers de la tabla
@@ -262,49 +252,80 @@ export async function ParseTable(
         return `                    <tr>\n${cells}\n                    </tr>`;
     }).join('\n');
 
+    // Crear sección de información del cliente según template.html
     const clientInfo = `
         <div class="client-info">
-            <div class="client-section">${container.title}</div>
+            <div class="client-section">Datos del cliente</div>
+            <div class="client-section"> </div>
             <div class="client-details">
-                ${container.email ? `<strong>Email:</strong> ${container.email}<br>` : ''}
-                ${container.phone ? `<strong>Teléfono:</strong> ${container.phone}<br>` : ''}
-                ${container.textField ? `<strong>Tipo de Persona:</strong> ${container.textField}<br>` : ''}
-                <p>${container.description || ''}</p>
+                ${container.clientName ? `<strong>Cliente/Razon social:</strong> ${container.clientName}<br>` : '<strong>Cliente/Razon social:</strong> <br>'}
+                ${container.clientTaxId ? `<strong>CUIT:</strong> ${container.clientTaxId}<br>` : '<strong>CUIT:</strong> <br>'}
+                ${container.clientAddress ? `<strong>Ubicación:</strong> ${container.clientAddress}<br>` : '<strong>Ubicación:</strong> <br>'}
+                ${container.clientPhone ? `<strong>Telefono:</strong> ${container.clientPhone}<br>` : '<strong>Telefono:</strong> <br>'}
+                ${container.clientEmail ? `<strong>Email:</strong> ${container.clientEmail}<br>` : ''}
+                ${container.clientDocument ? `<strong>Documento:</strong> ${container.clientDocument}<br>` : ''}
+                ${container.description ? `<strong>Información Adicional:</strong> ${container.description}<br>` : ''}
             </div>
             <div class="date-badge">${new Date().toLocaleDateString('es-ES')}</div>
         </div>`;
 
-    // Crear sección de totales
+    // Crear sección de footer con datos de la empresa según template.html
+    const footerInfo = `
+        <div class="footer">
+            <div class="footer-content">
+                <div class="company-info">
+                    <div class="company-name">${container.companyName || 'Nombre de la Empresa'}</div>
+                    <div class="company-details">
+                        <span>Dirección: ${container.companyAddress || 'Calle Ejemplo 123, Ciudad'}</span><br>
+                        <span>Teléfono: ${container.companyPhone || '+54 11 1234-5678'}</span><br>
+                        <span>Email: ${container.companyEmail || 'contacto@empresa.com'}</span>
+                        ${container.companyTaxId ? `<br><span>CUIT: ${container.companyTaxId}</span>` : ''}
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="footer-note">Gracias por su confianza</div>
+                    <div class="footer-website">${container.companyWebsite || 'www.empresa.com'}</div>
+                </div>
+            </div>
+        </div>`;
+
+    // Crear sección de totales según template.html
     let totalsSection = '';
     if (totalInfo) {
+        const transferInfo = generateTransferTable();
+        
         totalsSection = `
         <div class="totals-section">
+            <div class="payment-info">
+                <div class="payment-title">Información de Pago</div>
+                <div class="payment-card">
+                    <div class="payment-details">
+                        <strong>EFECTIVO / TRANSFERENCIA</strong><br><br>
+                        ${transferInfo || `<strong>Cuenta:</strong> 058-214570/7<br>
+                        <strong>CUIT/CUIL:</strong> ${container.companyTaxId || '23317324830'}<br>
+                        <strong>CBU:</strong> 0720058880000214570721<br>
+                        <strong>Alias:</strong> <span class="payment-highlight">${container.companyName ? container.companyName.replace(/\s+/g, '.').toUpperCase() : 'EMPRESA.NOMBRE'}</span>`}
+                    </div>
+                </div> 
+            </div>
             <div class="totals-grid">
                 <div class="totals-row">
                     <div class="totals-label subtotal-label">Subtotal</div>
-                    <div class="totals-value subtotal-value">${formatNumber(totalInfo.subtotal, true)} $ USD</div>
+                    <div class="totals-value subtotal-value">$${formatNumber(totalInfo.subtotal, false)}</div>
                 </div>
                 ${totalInfo.hasPercentage && totalInfo.percentage && totalInfo.percentageAmount ? `
                 <div class="totals-row">
-                    <div class="totals-label tax-label">${totalInfo.percentage}%</div>
-                    <div class="totals-value tax-value">${formatNumber(totalInfo.percentageAmount, true)}</div>
+                    <div class="totals-label tax-label">IVA (${totalInfo.percentage}%)</div>
+                    <div class="totals-value tax-value">$${formatNumber(totalInfo.percentageAmount, false)}</div>
                 </div>` : ''}
                 <div class="totals-row total-row">
                     <div class="totals-label total-label">Total</div>
-                    <div class="totals-value total-value">${formatNumber(totalInfo.finalTotal, true)} $ USD</div>
+                    <div class="totals-value total-value">$${formatNumber(totalInfo.finalTotal, false)}</div>
                 </div>
             </div>
         </div>`;
     }
 
-    // Crear sección de información de pago
-    const paymentInfo = `
-        <div class="payment-info">
-            <div class="decorative-element"></div>
-        </div>
-        
-        ${generateTransferTable()}`;
-console.log(paymentInfo)
     // Construir el HTML completo
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -332,7 +353,6 @@ console.log(paymentInfo)
         }
         .payment-info {
             margin-top: 20px;
-            padding: 15px;
         }
         .payment-title {
             font-size: 18px;
@@ -343,15 +363,14 @@ console.log(paymentInfo)
         .payment-card {
             border: 1px solid #ddd;
             border-radius: 8px;
-            background-color: #f9f9f9;
-            padding: 15px;
-            margin-bottom: 10px;
+            background-color: transparent;
         }
         .payment-details {
             line-height: 1.6;
+            background-color: transparent;
         }
         .payment-highlight {
-            background-color: #e8f4f8;
+            background-color: transparent;
             padding: 2px 6px;
             border-radius: 4px;
             font-weight: bold;
@@ -362,21 +381,190 @@ console.log(paymentInfo)
             border-radius: 2px;
             margin-top: 15px;
         }
+        
+        /* Estilos para información de cliente según template.html */
+        .client-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto auto;
+            gap: 10px;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .client-section {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .client-details {
+            grid-column: span 2;
+            line-height: 1.6;
+            font-size: 14px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .date-badge {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        
+        /* Estilos para footer según template.html */
+        .footer {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .company-info {
+            flex: 1;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            font-weight: bold; 
+            margin-bottom: 10px;
+        }
+        
+        .company-details {
+            line-height: 1.6;
+            font-size: 14px; 
+        }
+        
+        .footer-right {
+            text-align: right;
+        }
+        
+        .footer-note {
+            font-size: 14px; 
+            margin-bottom: 5px;
+        }
+        
+        .footer-website {
+            font-size: 12px;
+            color: #007bff;
+        }
+        
+        /* Estilos para totals-section según template.html */
+        .totals-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .payment-info {
+            flex: 1;
+        }
+        
+        .payment-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .payment-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .payment-details {
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .payment-highlight {
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .totals-grid {
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .totals-row.total-row {
+            border-bottom: none;
+            border-top: 2px solid #333;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .totals-label {
+            color: #333;
+        }
+        
+        .totals-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .total-value {
+            color: #007bff;
+        }
+        
+        @media (max-width: 768px) {
+            .client-info {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .client-details {
+                grid-column: span 1;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .footer-right {
+                text-align: left;
+            }
+            
+            .totals-section {
+                flex-direction: column;
+            }
+            
+            .totals-grid {
+                max-width: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="logo-container">
-                <div class="logo">
-                    <div class="logo-icon">${container.title.charAt(0).toUpperCase()}</div>
-                </div>
-            </div>
-            ${container.image ? `
-            <div class="image-container">
-                <img src="${container.image}" alt="Imagen del presupuesto" class="header-image">
-            </div>` : ''}
-            <h1 class="main-title">FACTURA</h1>
+        <div class="header"> 
+            <h1 class="main-title">${container.title || 'PRESUPUESTO'}</h1>
         </div>
         
         ${clientInfo}
@@ -396,8 +584,9 @@ ${tableRows}
         
         ${totalsSection}
         
+        ${footerInfo}
+        
     </div>
-       ${paymentInfo}
 </body>
 </html>`;
 

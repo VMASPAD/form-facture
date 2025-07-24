@@ -5,12 +5,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Container, Column } from '@/pages/Menu'
 import { ParseTable } from '@/lib/parse'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router'
 import { motion } from 'motion/react'
-import { Plus, Trash2, ArrowLeft, Save, FileText, CreditCard, ChevronUp, ChevronDown, Edit } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Save, FileText, CreditCard, ChevronUp, ChevronDown, Edit, Settings } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -46,6 +47,9 @@ function Editor() {
   const [isEditColumnDialogOpen, setIsEditColumnDialogOpen] = useState(false)
   const [editingColumn, setEditingColumn] = useState<Column | null>(null)
   const [editingColumnName, setEditingColumnName] = useState('')
+
+  // Estados para editar datos del container
+  const [isEditContainerDataDialogOpen, setIsEditContainerDataDialogOpen] = useState(false)
 
   // Load container from localStorage
   useEffect(() => {
@@ -366,6 +370,25 @@ function Editor() {
     setEditingColumnName('')
   }
 
+  // Función para manejar la carga del logo
+  const handleCompanyLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const base64String = e.target?.result as string
+        if (container) {
+          const updatedContainer = {
+            ...container,
+            companyLogo: base64String
+          }
+          saveContainer(updatedContainer)
+        }
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   // Funciones auxiliares para calcular totales
   const calculateColumnSum = (columnId: string): number => {
     if (!container) return 0
@@ -598,6 +621,14 @@ function Editor() {
           </div>
           
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsEditContainerDataDialogOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Editar Datos
+            </Button>
             <Button
               variant="outline"
               onClick={() => setIsAddColumnDialogOpen(true)}
@@ -1035,6 +1066,259 @@ function Editor() {
               <Button onClick={saveEditColumn} className="flex items-center gap-2">
                 <Save className="h-4 w-4" />
                 Guardar Cambios
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Container Data Dialog */}
+        <Dialog open={isEditContainerDataDialogOpen} onOpenChange={setIsEditContainerDataDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Datos de la Factura</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6">
+              {/* Datos Básicos */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Información Básica</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="edit-title">Título</Label>
+                      <Input
+                        id="edit-title"
+                        value={container?.title || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, title: e.target.value })
+                          }
+                        }}
+                        placeholder="Título de la factura"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-description">Información Adicional</Label>
+                      <Input
+                        id="edit-description"
+                        value={container?.description || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, description: e.target.value })
+                          }
+                        }}
+                        placeholder="Información Adicional"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Datos del Cliente */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Datos del Cliente</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="edit-clientName">Nombre del Cliente</Label>
+                      <Input
+                        id="edit-clientName"
+                        value={container?.clientName || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, clientName: e.target.value })
+                          }
+                        }}
+                        placeholder="Nombre completo o razón social"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-clientEmail">Email del Cliente</Label>
+                      <Input
+                        id="edit-clientEmail"
+                        type="email"
+                        value={container?.clientEmail || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, clientEmail: e.target.value })
+                          }
+                        }}
+                        placeholder="cliente@ejemplo.com"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-clientPhone">Teléfono del Cliente</Label>
+                      <Input
+                        id="edit-clientPhone"
+                        type="tel"
+                        value={container?.clientPhone || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, clientPhone: e.target.value })
+                          }
+                        }}
+                        placeholder="+1 234 567 890"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-clientDocument">Documento/DNI</Label>
+                      <Input
+                        id="edit-clientDocument"
+                        value={container?.clientDocument || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, clientDocument: e.target.value })
+                          }
+                        }}
+                        placeholder="12345678"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="edit-clientAddress">Dirección del Cliente</Label>
+                      <Input
+                        id="edit-clientAddress"
+                        value={container?.clientAddress || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, clientAddress: e.target.value })
+                          }
+                        }}
+                        placeholder="Dirección completa"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-clientTaxId">CUIT/RUC/Tax ID</Label>
+                      <Input
+                        id="edit-clientTaxId"
+                        value={container?.clientTaxId || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, clientTaxId: e.target.value })
+                          }
+                        }}
+                        placeholder="20-12345678-9"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Datos de la Empresa */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Datos de la Empresa</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="edit-companyName">Nombre de la Empresa</Label>
+                      <Input
+                        id="edit-companyName"
+                        value={container?.companyName || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, companyName: e.target.value })
+                          }
+                        }}
+                        placeholder="Mi Empresa S.A."
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-companyEmail">Email de la Empresa</Label>
+                      <Input
+                        id="edit-companyEmail"
+                        type="email"
+                        value={container?.companyEmail || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, companyEmail: e.target.value })
+                          }
+                        }}
+                        placeholder="contacto@miempresa.com"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-companyPhone">Teléfono de la Empresa</Label>
+                      <Input
+                        id="edit-companyPhone"
+                        type="tel"
+                        value={container?.companyPhone || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, companyPhone: e.target.value })
+                          }
+                        }}
+                        placeholder="+1 234 567 890"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-companyTaxId">CUIT/RUC de la Empresa</Label>
+                      <Input
+                        id="edit-companyTaxId"
+                        value={container?.companyTaxId || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, companyTaxId: e.target.value })
+                          }
+                        }}
+                        placeholder="30-12345678-9"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="edit-companyAddress">Dirección de la Empresa</Label>
+                      <Input
+                        id="edit-companyAddress"
+                        value={container?.companyAddress || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, companyAddress: e.target.value })
+                          }
+                        }}
+                        placeholder="Dirección de la empresa"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-companyWebsite">Sitio Web</Label>
+                      <Input
+                        id="edit-companyWebsite"
+                        value={container?.companyWebsite || ''}
+                        onChange={(e) => {
+                          if (container) {
+                            saveContainer({ ...container, companyWebsite: e.target.value })
+                          }
+                        }}
+                        placeholder="https://miempresa.com"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-companyLogo">Logo de la Empresa</Label>
+                      <Input
+                        id="edit-companyLogo"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCompanyLogoUpload}
+                        className="cursor-pointer"
+                      />
+                      {container?.companyLogo && (
+                        <div className="mt-2">
+                          <img
+                            src={container.companyLogo}
+                            alt="Logo Preview"
+                            className="w-20 h-20 object-cover rounded-md border"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditContainerDataDialogOpen(false)}>
+                Cerrar
               </Button>
             </DialogFooter>
           </DialogContent>
