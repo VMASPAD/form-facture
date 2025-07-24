@@ -23,7 +23,7 @@
   },
   "bundle": {
     "android": {
-      "versionCode": 40,
+      "versionCode": 42,
       "minSdkVersion": 35
     },
     "active": true,

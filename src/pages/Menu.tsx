@@ -562,21 +562,15 @@ function Menu() {
                           <SelectValue placeholder="Selecciona una plantilla" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">Clasico</SelectItem>
-                          <SelectItem value="2">CyberPunk</SelectItem>
-                          <SelectItem value="3">Artistico</SelectItem>
-                          <SelectItem value="4">Minimalista</SelectItem>
-                          <SelectItem value="5">Gotico</SelectItem>
-                          <SelectItem value="6">SCIFI</SelectItem>
-                          <SelectItem value="7">PlayFul</SelectItem>
-                          <SelectItem value="8">Rustico</SelectItem>
-                          <SelectItem value="9">Formal</SelectItem>
-                          <SelectItem value="10">Futurista</SelectItem>
-                          <SelectItem value="11">Formal Colorido</SelectItem>
-                          <SelectItem value="12">Formal Gris</SelectItem>
-                          <SelectItem value="13">Formal Rojo</SelectItem>
-                          <SelectItem value="14">Formal Celeste</SelectItem>
-                          <SelectItem value="15">Formal Azul</SelectItem>
+                          <SelectItem value="1">Océano Azul Minimalista</SelectItem>
+                          <SelectItem value="2">Verde Bosque Profesional</SelectItem>
+                          <SelectItem value="3">Naranja Atardecer Moderno</SelectItem>
+                          <SelectItem value="4">Púrpura Real Elegante</SelectItem>
+                          <SelectItem value="5">Teal Corporativo</SelectItem>
+                          <SelectItem value="6">Rosa Dorado Lujo</SelectItem>
+                          <SelectItem value="7">Negro Medianoche Premium</SelectItem>
+                          <SelectItem value="8">Amarillo Dorado Vibrante</SelectItem>
+                          <SelectItem value="9">Rosa Coral Creativo</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1126,23 +1120,17 @@ function Menu() {
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecciona una plantilla" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Clasico</SelectItem>
-                        <SelectItem value="2">CyberPunk</SelectItem>
-                        <SelectItem value="3">Artistico</SelectItem>
-                        <SelectItem value="4">Minimalista</SelectItem>
-                        <SelectItem value="5">Gotico</SelectItem>
-                        <SelectItem value="6">SCIFI</SelectItem>
-                        <SelectItem value="7">PlayFul</SelectItem>
-                        <SelectItem value="8">Rustico</SelectItem>
-                        <SelectItem value="9">Formal</SelectItem>
-                        <SelectItem value="10">Futurista</SelectItem>
-                        <SelectItem value="11">Formal Colorido</SelectItem>
-                        <SelectItem value="12">Formal Gris</SelectItem>
-                        <SelectItem value="13">Formal Rojo</SelectItem>
-                        <SelectItem value="14">Formal Celeste</SelectItem>
-                        <SelectItem value="15">Formal Azul</SelectItem>
-                      </SelectContent>
+                        <SelectContent>
+                          <SelectItem value="1">Océano Azul Minimalista</SelectItem>
+                          <SelectItem value="2">Verde Bosque Profesional</SelectItem>
+                          <SelectItem value="3">Naranja Atardecer Moderno</SelectItem>
+                          <SelectItem value="4">Púrpura Real Elegante</SelectItem>
+                          <SelectItem value="5">Teal Corporativo</SelectItem>
+                          <SelectItem value="6">Rosa Dorado Lujo</SelectItem>
+                          <SelectItem value="7">Negro Medianoche Premium</SelectItem>
+                          <SelectItem value="8">Amarillo Dorado Vibrante</SelectItem>
+                          <SelectItem value="9">Rosa Coral Creativo</SelectItem>
+                        </SelectContent>
                     </Select>
                   </div>
                   {editingContainer && (
