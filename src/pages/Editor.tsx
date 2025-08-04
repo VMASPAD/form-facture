@@ -25,7 +25,7 @@ function Editor() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const containerId = searchParams.get('id')
-  
+
   const [container, setContainer] = useState<Container | null>(null)
   const [isAddColumnDialogOpen, setIsAddColumnDialogOpen] = useState(false)
   const [isEditRowDialogOpen, setIsEditRowDialogOpen] = useState(false)
@@ -34,7 +34,7 @@ function Editor() {
   const [editingRowData, setEditingRowData] = useState<Record<string, any>>({})
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const [isSharing, setIsSharing] = useState(false)
-  
+
   // Estados para transferencias
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
   const [isAddTransferColumnDialogOpen, setIsAddTransferColumnDialogOpen] = useState(false)
@@ -42,7 +42,7 @@ function Editor() {
   const [editingTransferRow, setEditingTransferRow] = useState<DynamicRow | null>(null)
   const [newTransferColumn, setNewTransferColumn] = useState({ name: '', type: 'text' as 'text' | 'number', sum: false })
   const [editingTransferRowData, setEditingTransferRowData] = useState<Record<string, any>>({})
-  
+
   // Estados para editar columnas
   const [isEditColumnDialogOpen, setIsEditColumnDialogOpen] = useState(false)
   const [editingColumn, setEditingColumn] = useState<Column | null>(null)
@@ -77,7 +77,7 @@ function Editor() {
     const savedContainers = localStorage.getItem('formFactureContainers')
     if (savedContainers) {
       const containers: Container[] = JSON.parse(savedContainers)
-      const updatedContainers = containers.map(c => 
+      const updatedContainers = containers.map(c =>
         c.id === updatedContainer.id ? updatedContainer : c
       )
       localStorage.setItem('formFactureContainers', JSON.stringify(updatedContainers))
@@ -126,8 +126,8 @@ function Editor() {
 
     const updatedContainer = {
       ...container,
-      columns: container.columns.map(col => 
-        col.id === columnId && col.type === 'number' 
+      columns: container.columns.map(col =>
+        col.id === columnId && col.type === 'number'
           ? { ...col, sum: !col.sum }
           : col
       )
@@ -167,7 +167,7 @@ function Editor() {
 
     const updatedContainer = {
       ...container,
-      data: container.data.map(row => 
+      data: container.data.map(row =>
         row.id === editingRow.id ? editingRowData : row
       )
     }
@@ -245,8 +245,8 @@ function Editor() {
 
     const updatedContainer = {
       ...container,
-      transferColumns: (container.transferColumns || []).map(col => 
-        col.id === columnId && col.type === 'number' 
+      transferColumns: (container.transferColumns || []).map(col =>
+        col.id === columnId && col.type === 'number'
           ? { ...col, sum: !col.sum }
           : col
       )
@@ -262,10 +262,10 @@ function Editor() {
       id: Date.now().toString()
     }
 
-    // Initialize with default values based on column types
-    ;(container.transferColumns || []).forEach(col => {
-      newRow[col.id] = col.type === 'number' ? 0 : ''
-    })
+      // Initialize with default values based on column types
+      ; (container.transferColumns || []).forEach(col => {
+        newRow[col.id] = col.type === 'number' ? 0 : ''
+      })
 
     const updatedContainer = {
       ...container,
@@ -286,7 +286,7 @@ function Editor() {
 
     const updatedContainer = {
       ...container,
-      transferData: (container.transferData || []).map(row => 
+      transferData: (container.transferData || []).map(row =>
         row.id === editingTransferRow.id ? editingTransferRowData : row
       )
     }
@@ -328,16 +328,16 @@ function Editor() {
 
     const columns = [...container.columns]
     const currentIndex = columns.findIndex(col => col.id === columnId)
-    
+
     if (currentIndex === -1) return
-    
+
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
-    
+
     if (newIndex < 0 || newIndex >= columns.length) return
-    
+
     // Intercambiar posiciones
     [columns[currentIndex], columns[newIndex]] = [columns[newIndex], columns[currentIndex]]
-    
+
     const updatedContainer = {
       ...container,
       columns
@@ -357,8 +357,8 @@ function Editor() {
 
     const updatedContainer = {
       ...container,
-      columns: container.columns.map(col => 
-        col.id === editingColumn.id 
+      columns: container.columns.map(col =>
+        col.id === editingColumn.id
           ? { ...col, name: editingColumnName.trim() }
           : col
       )
@@ -394,7 +394,7 @@ function Editor() {
     if (!container) return 0
     const column = container.columns.find(col => col.id === columnId)
     if (!column || column.type !== 'number' || !column.sum) return 0
-    
+
     return container.data.reduce((sum, row: any) => {
       const value = row[columnId]
       const numValue = typeof value === 'number' ? value : parseFloat(value) || 0
@@ -421,15 +421,15 @@ function Editor() {
 
   const handleGenerateHTML = async () => {
     if (!container) return;
-    
+
     setIsGeneratingPDF(true);
-    
+
     try {
       // Calcular totales para incluir en el PDF
       const subtotal = calculateTotalSum();
       const percentageAmount = calculatePercentageAmount(subtotal);
       const finalTotal = calculateFinalTotal();
-      
+
       const totalInfo = {
         subtotal,
         percentage: container.percentageValue || 0,
@@ -437,13 +437,13 @@ function Editor() {
         finalTotal,
         hasPercentage: container.percentageEnabled || false
       };
-      
+
       const htmlString = await ParseTable(container, false, totalInfo, {
         transferColumns: container.transferColumns || [],
         transferRows: container.transferData || []
       });
       console.log('HTML generado:', htmlString);
-      
+
       // Preparar el payload para la API con el total final
       const payload = {
         name: `${container.title.replace(/\s+/g, '_')}_factura`,
@@ -460,17 +460,17 @@ function Editor() {
         },
         body: JSON.stringify(payload)
       });
-      
+
       if (!response.ok) {
         throw new Error(`Error en la API: ${response.status} ${response.statusText}`);
       }
-      
+
       // Obtener el binario del PDF
       const pdfBlob = await response.blob();
-      
+
       // Crear URL para el PDF
       const url = URL.createObjectURL(pdfBlob);
-      
+
       // Crear enlace para descargar el PDF
       const a = document.createElement('a');
       a.href = url;
@@ -482,11 +482,11 @@ function Editor() {
       toast.success(`Factura generada exitosamente.`);
       console.log('PDF generado y descargado exitosamente');
       await handleDeletePDF()
-      
+
     } catch (error) {
       console.error('Error al generar PDF:', error);
       toast.error("Error al generar PDF. Se descargó HTML como alternativa.");
-      
+
       // Fallback: descargar HTML si falla la API
       const htmlString = await ParseTable(container, false, undefined, {
         transferColumns: container.transferColumns || [],
@@ -494,7 +494,7 @@ function Editor() {
       });
       const blob = new Blob([htmlString], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
-      
+
       const a = document.createElement('a');
       a.href = url;
       a.download = `${container.title.replace(/\s+/g, '_')}_factura.html`;
@@ -502,7 +502,7 @@ function Editor() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       alert('Error al generar PDF. Se descargó HTML como alternativa.');
     } finally {
       setIsGeneratingPDF(false);
@@ -511,7 +511,7 @@ function Editor() {
 
   const handleShareFile = async () => {
     if (!container) return;
-    
+
     console.log(isSharing)
     setIsSharing(true);
     try {
@@ -519,7 +519,7 @@ function Editor() {
       const subtotal = calculateTotalSum();
       const percentageAmount = calculatePercentageAmount(subtotal);
       const finalTotal = calculateFinalTotal();
-      
+
       const totalInfo = {
         subtotal,
         percentage: container.percentageValue || 0,
@@ -527,7 +527,7 @@ function Editor() {
         finalTotal,
         hasPercentage: container.percentageEnabled || false
       };
-      
+
       await ParseTable(container, true, totalInfo, {
         transferColumns: container.transferColumns || [],
         transferRows: container.transferData || []
@@ -543,15 +543,15 @@ function Editor() {
 
   const handleDeletePDF = async () => {
     if (!container) return;
-    
+
     try {
       const pdfName = `${container.title.replace(/\s+/g, '_')}_factura`;
-      
+
       // Preparar el payload para eliminar PDF
       const payload = {
         name: pdfName
       };
-      
+
       // Hacer fetch a la API para eliminar PDF
       const response = await fetch('https://pdfconvertor.hermesbackend.xyz/eliminate-pdf', {
         method: 'POST',
@@ -560,14 +560,14 @@ function Editor() {
         },
         body: JSON.stringify(payload)
       });
-      
+
       if (!response.ok) {
         throw new Error(`Error en la API: ${response.status} ${response.statusText}`);
       }
-      
+
       toast.success(`PDF "${pdfName}" eliminado exitosamente del servidor`);
       console.log('PDF eliminado exitosamente del servidor');
-      
+
     } catch (error) {
       console.error('Error al eliminar PDF:', error);
       toast.error("Error al eliminar PDF del servidor");
@@ -589,9 +589,9 @@ function Editor() {
         className="space-y-6"
       >
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="flex items-center gap-2 flex-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -600,729 +600,735 @@ function Editor() {
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <h1 className="text-3xl font-bold">{container.title}</h1>
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => {
-                handleGenerateHTML();
-                handleShareFile();
-              }}
-              disabled={isGeneratingPDF}
-            >
-              <FileText className="h-4 w-4" />
-              {isGeneratingPDF ? 'Generando PDF...' : 'Generar PDF'}
-            </Button>
-            </div>
-            <p className="text-muted-foreground">{container.description}</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Plantilla {container.template} • {container.data.length} filas • {container.columns.length} columnas
-            </p>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsEditContainerDataDialogOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              Editar Datos
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setIsAddColumnDialogOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Agregar Columna
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setIsTransferDialogOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <CreditCard className="h-4 w-4" />
-              Formas de Pago
-            </Button>
-          </div>
-        </div>
-
-        {/* Data Table */}
-        {container.columns.length > 0 ? (
-          <DataTable
-            columns={dynamicColumns}
-            data={container.data}
-            containerColumns={container.columns}
-            onAddRow={addRow}
-            showAddButton={true}
-            container={container}
-            onUpdateContainer={saveContainer}
-          />
-        ) : (
-          <div className="text-center py-12 border rounded-lg bg-muted/20">
-            <p className="text-muted-foreground mb-4">
-              No hay columnas definidas aún
-            </p>
-            <Button onClick={() => setIsAddColumnDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Crear Primera Columna
-            </Button>
-          </div>
-        )}
-
-        {/* Column Management */}
-        {container.columns.length > 0 && (
-          <div className="bg-card border rounded-lg p-4">
-            <h3 className="font-semibold mb-3">Gestión de Columnas</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {container.columns.map((column, index) => (
-                <div key={column.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{column.name}</span>
-                      <span className="text-xs text-muted-foreground capitalize">({column.type})</span>
-                      {column.type === 'number' && column.sum && (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                          SUMA
-                        </span>
-                      )}
-                    </div>
-                    {column.type === 'number' && (
-                      <div className="flex items-center gap-2 mt-1">
-                        <Checkbox
-                          id={`sum-${column.id}`}
-                          checked={column.sum || false}
-                          onCheckedChange={() => toggleColumnSum(column.id)}
-                        />
-                        <Label htmlFor={`sum-${column.id}`} className="text-xs">
-                          Sumar columna
-                        </Label>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {/* Botones para mover */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => moveColumn(column.id, 'up')}
-                      disabled={index === 0}
-                      className="p-1 h-8 w-8"
-                      title="Mover hacia arriba"
-                    >
-                      <ChevronUp className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => moveColumn(column.id, 'down')}
-                      disabled={index === container.columns.length - 1}
-                      className="p-1 h-8 w-8"
-                      title="Mover hacia abajo"
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                    {/* Botón para editar nombre */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditColumn(column)}
-                      className="p-1 h-8 w-8"
-                      title="Editar nombre"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    {/* Botón para eliminar */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteColumn(column.id)}
-                      className="text-destructive hover:text-destructive p-1 h-8 w-8"
-                      title="Eliminar columna"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Add Column Dialog */}
-        <Dialog open={isAddColumnDialogOpen} onOpenChange={setIsAddColumnDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Agregar Nueva Columna</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="column-name">Nombre de la Columna</Label>
-                <Input
-                  id="column-name"
-                  value={newColumn.name}
-                  onChange={(e) => setNewColumn({ ...newColumn, name: e.target.value })}
-                  placeholder="Ingresa el nombre de la columna"
-                />
+              <div className="flex-1">
+                <h1 className="text-xl sm:text-3xl font-bold">{container.title}</h1>
+                <p className="text-muted-foreground text-sm">{container.description}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Plantilla {container.template} • {container.data.length} filas • {container.columns.length} columnas
+                </p>
               </div>
-              <div>
-                <Label htmlFor="column-type">Tipo de Dato</Label>
-                <Select 
-                  value={newColumn.type}
-                  onValueChange={(value) => setNewColumn({ 
-                    ...newColumn, 
-                    type: value as 'text' | 'number',
-                    sum: value === 'text' ? false : newColumn.sum
-                  })}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecciona el tipo de dato" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="text">Texto</SelectItem>
-                    <SelectItem value="number">Número</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {newColumn.type === 'number' && (
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="column-sum"
-                    checked={newColumn.sum}
-                    onCheckedChange={(checked) => setNewColumn({ ...newColumn, sum: !!checked })}
-                  />
-                  <Label htmlFor="column-sum">
-                    Sumar todos los valores de esta columna
-                  </Label>
-                </div>
-              )}
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddColumnDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={addColumn}>
-                Agregar Columna
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
-        {/* Edit Row Dialog */}
-        <Dialog open={isEditRowDialogOpen} onOpenChange={setIsEditRowDialogOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Editar Fila</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {container.columns.map((column) => (
-                <div key={column.id}>
-                  <Label htmlFor={`edit-${column.id}`}>
-                    {column.name} ({column.type})
-                  </Label>
-                  <Input
-                    id={`edit-${column.id}`}
-                    type={column.type === 'number' ? 'number' : 'text'}
-                    value={editingRowData[column.id] || ''}
-                    onChange={(e) => handleEditRowChange(column.id, e.target.value)}
-                    placeholder={`Ingresa ${column.type === 'number' ? 'un número' : 'texto'}`}
-                  />
-                </div>
-              ))}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditRowDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={saveEditRow} className="flex items-center gap-2">
-                <Save className="h-4 w-4" />
-                Guardar Cambios
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Transfer Dialog */}
-        <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
-          <DialogContent className="max-w-6xl">
-            <DialogHeader>
-              <DialogTitle>Gestión de Transferencias</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              {/* Transfer Table Actions */}
-              <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <div className='flex flex-row gap-5'>
                 <Button
                   variant="outline"
-                  onClick={() => setIsAddTransferColumnDialogOpen(true)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-fit sm:w-auto"
+                  onClick={() => {
+                    handleGenerateHTML();
+                    handleShareFile();
+                  }}
+                  disabled={isGeneratingPDF}
                 >
-                  <Plus className="h-4 w-4" />
-                  Agregar Columna
+                  <FileText className="h-4 w-4" />
+                  <span>{isGeneratingPDF ? 'Generando PDF...' : 'Generar PDF'}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditContainerDataDialogOpen(true)}
+                  className="flex items-center justify-center gap-2 w-fit sm:w-auto"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Editar Datos</span>
                 </Button>
               </div>
-
-              {/* Transfer Table */}
-              {(container.transferColumns || []).length > 0 ? (
-                <DataTable
-                  columns={createDynamicColumns(container.transferColumns || [], editTransferRow, deleteTransferRow)}
-                  data={container.transferData || []}
-                  containerColumns={container.transferColumns || []}
-                  onAddRow={addTransferRow}
-                  showAddButton={true}
-                  container={{
-                    ...container,
-                    columns: container.transferColumns,
-                    data: container.transferData,
-                    percentageEnabled: false // Las transferencias no tienen porcentajes
-                  }}
-                  onUpdateContainer={(updatedContainer) => {
-                    saveContainer({
-                      ...container,
-                      transferData: updatedContainer.data,
-                      transferColumns: updatedContainer.columns
-                    })
-                  }}
-                />
-              ) : (
-                <div className="text-center py-12 border rounded-lg bg-muted/20">
-                  <p className="text-muted-foreground mb-4">
-                    No hay columnas de transferencia definidas aún
-                  </p>
-                  <Button onClick={() => setIsAddTransferColumnDialogOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Crear Primera Columna de Transferencia
-                  </Button>
-                </div>
-              )}
-
-              {/* Transfer Column Management */}
-              {(container.transferColumns || []).length > 0 && (
-                <div className="bg-card border rounded-lg p-4">
-                  <h3 className="font-semibold mb-3">Gestión de Columnas de Transferencia</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {(container.transferColumns || []).map((column) => (
-                      <div key={column.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <div className="flex-1">
-                          <p className="font-medium">{column.name}</p>
-                          <p className="text-sm text-muted-foreground capitalize">{column.type}</p>
-                          {column.type === 'number' && (
-                            <div className="flex items-center gap-2 mt-1">
-                              <Checkbox
-                                id={`transfer-sum-${column.id}`}
-                                checked={column.sum || false}
-                                onCheckedChange={() => toggleTransferColumnSum(column.id)}
-                              />
-                              <Label htmlFor={`transfer-sum-${column.id}`} className="text-xs">
-                                Sumar columna
-                              </Label>
-                            </div>
-                          )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteTransferColumn(column.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsTransferDialogOpen(false)}>
-                Cerrar
+              <div className='flex flex-row gap-5'>
+              <Button
+                variant="outline"
+                onClick={() => setIsAddColumnDialogOpen(true)}
+                className="flex items-center justify-center gap-2 w-fit sm:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Agregar Columna</span>
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Add Transfer Column Dialog */}
-        <Dialog open={isAddTransferColumnDialogOpen} onOpenChange={setIsAddTransferColumnDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Agregar Nueva Columna de Transferencia</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="transfer-column-name">Nombre de la Columna</Label>
-                <Input
-                  id="transfer-column-name"
-                  value={newTransferColumn.name}
-                  onChange={(e) => setNewTransferColumn({ ...newTransferColumn, name: e.target.value })}
-                  placeholder="Ej: Banco, Monto, Fecha"
-                />
-              </div>
-              <div>
-                <Label htmlFor="transfer-column-type">Tipo de Dato</Label>
-                <Select 
-                  value={newTransferColumn.type}
-                  onValueChange={(value) => setNewTransferColumn({ 
-                    ...newTransferColumn, 
-                    type: value as 'text' | 'number',
-                    sum: value === 'text' ? false : newTransferColumn.sum
-                  })}
+                <Button
+                  variant="outline"
+                  onClick={() => setIsTransferDialogOpen(true)}
+                  className="flex items-center justify-center gap-2 w-fit sm:w-auto"
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecciona el tipo de dato" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="text">Texto</SelectItem>
-                    <SelectItem value="number">Número</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <CreditCard className="h-4 w-4" />
+                  <span>Formas de Pago</span>
+                </Button></div>
+            </div>
+          </div>
               </div>
-              {newTransferColumn.type === 'number' && (
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="transfer-column-sum"
-                    checked={newTransferColumn.sum}
-                    onCheckedChange={(checked) => setNewTransferColumn({ ...newTransferColumn, sum: !!checked })}
-                  />
-                  <Label htmlFor="transfer-column-sum">
-                    Sumar todos los valores de esta columna
-                  </Label>
-                </div>
-              )}
+
+          {/* Data Table */}
+          {container.columns.length > 0 ? (
+            <DataTable
+              columns={dynamicColumns}
+              data={container.data}
+              containerColumns={container.columns}
+              onAddRow={addRow}
+              showAddButton={true}
+              container={container}
+              onUpdateContainer={saveContainer}
+            />
+          ) : (
+            <div className="text-center py-12 border rounded-lg bg-muted/20">
+              <p className="text-muted-foreground mb-4">
+                No hay columnas definidas aún
+              </p>
+              <Button onClick={() => setIsAddColumnDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Crear Primera Columna
+              </Button>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddTransferColumnDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={addTransferColumn}>
-                Agregar Columna
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          )}
 
-        {/* Edit Transfer Row Dialog */}
-        <Dialog open={isEditTransferRowDialogOpen} onOpenChange={setIsEditTransferRowDialogOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Editar Fila de Transferencia</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {(container.transferColumns || []).map((column) => (
-                <div key={column.id}>
-                  <Label htmlFor={`edit-transfer-${column.id}`}>
-                    {column.name} ({column.type})
-                  </Label>
-                  <Input
-                    id={`edit-transfer-${column.id}`}
-                    type={column.type === 'number' ? 'number' : 'text'}
-                    value={editingTransferRowData[column.id] || ''}
-                    onChange={(e) => handleEditTransferRowChange(column.id, e.target.value)}
-                    placeholder={`Ingresa ${column.type === 'number' ? 'un número' : 'texto'}`}
-                  />
-                </div>
-              ))}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditTransferRowDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={saveEditTransferRow} className="flex items-center gap-2">
-                <Save className="h-4 w-4" />
-                Guardar Cambios
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Column Dialog */}
-        <Dialog open={isEditColumnDialogOpen} onOpenChange={setIsEditColumnDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Editar Nombre de Columna</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="edit-column-name">Nombre de la Columna</Label>
-                <Input
-                  id="edit-column-name"
-                  value={editingColumnName}
-                  onChange={(e) => setEditingColumnName(e.target.value)}
-                  placeholder="Ingresa el nuevo nombre"
-                />
-              </div>
-              {editingColumn && (
-                <div className="text-sm text-muted-foreground">
-                  <p>Tipo: <span className="capitalize">{editingColumn.type}</span></p>
-                  {editingColumn.type === 'number' && editingColumn.sum && (
-                    <p>Esta columna está configurada para sumarse</p>
-                  )}
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditColumnDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={saveEditColumn} className="flex items-center gap-2">
-                <Save className="h-4 w-4" />
-                Guardar Cambios
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Container Data Dialog */}
-        <Dialog open={isEditContainerDataDialogOpen} onOpenChange={setIsEditContainerDataDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Editar Datos de la Factura</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              {/* Datos Básicos */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Información Básica</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-title">Título</Label>
-                      <Input
-                        id="edit-title"
-                        value={container?.title || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, title: e.target.value })
-                          }
-                        }}
-                        placeholder="Título de la factura"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-description">Información Adicional</Label>
-                      <Input
-                        id="edit-description"
-                        value={container?.description || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, description: e.target.value })
-                          }
-                        }}
-                        placeholder="Información Adicional"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Datos del Cliente */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Datos del Cliente</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-clientName">Nombre del Cliente</Label>
-                      <Input
-                        id="edit-clientName"
-                        value={container?.clientName || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, clientName: e.target.value })
-                          }
-                        }}
-                        placeholder="Nombre completo o razón social"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-clientEmail">Email del Cliente</Label>
-                      <Input
-                        id="edit-clientEmail"
-                        type="email"
-                        value={container?.clientEmail || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, clientEmail: e.target.value })
-                          }
-                        }}
-                        placeholder="cliente@ejemplo.com"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-clientPhone">Teléfono del Cliente</Label>
-                      <Input
-                        id="edit-clientPhone"
-                        type="tel"
-                        value={container?.clientPhone || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, clientPhone: e.target.value })
-                          }
-                        }}
-                        placeholder="+1 234 567 890"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-clientDocument">Documento/DNI</Label>
-                      <Input
-                        id="edit-clientDocument"
-                        value={container?.clientDocument || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, clientDocument: e.target.value })
-                          }
-                        }}
-                        placeholder="12345678"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <Label htmlFor="edit-clientAddress">Dirección del Cliente</Label>
-                      <Input
-                        id="edit-clientAddress"
-                        value={container?.clientAddress || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, clientAddress: e.target.value })
-                          }
-                        }}
-                        placeholder="Dirección completa"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-clientTaxId">CUIT/RUC/Tax ID</Label>
-                      <Input
-                        id="edit-clientTaxId"
-                        value={container?.clientTaxId || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, clientTaxId: e.target.value })
-                          }
-                        }}
-                        placeholder="20-12345678-9"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Datos de la Empresa */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Datos de la Empresa</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-companyName">Nombre de la Empresa</Label>
-                      <Input
-                        id="edit-companyName"
-                        value={container?.companyName || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, companyName: e.target.value })
-                          }
-                        }}
-                        placeholder="Mi Empresa S.A."
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-companyEmail">Email de la Empresa</Label>
-                      <Input
-                        id="edit-companyEmail"
-                        type="email"
-                        value={container?.companyEmail || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, companyEmail: e.target.value })
-                          }
-                        }}
-                        placeholder="contacto@miempresa.com"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-companyPhone">Teléfono de la Empresa</Label>
-                      <Input
-                        id="edit-companyPhone"
-                        type="tel"
-                        value={container?.companyPhone || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, companyPhone: e.target.value })
-                          }
-                        }}
-                        placeholder="+1 234 567 890"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-companyTaxId">CUIT/RUC de la Empresa</Label>
-                      <Input
-                        id="edit-companyTaxId"
-                        value={container?.companyTaxId || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, companyTaxId: e.target.value })
-                          }
-                        }}
-                        placeholder="30-12345678-9"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <Label htmlFor="edit-companyAddress">Dirección de la Empresa</Label>
-                      <Input
-                        id="edit-companyAddress"
-                        value={container?.companyAddress || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, companyAddress: e.target.value })
-                          }
-                        }}
-                        placeholder="Dirección de la empresa"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-companyWebsite">Sitio Web</Label>
-                      <Input
-                        id="edit-companyWebsite"
-                        value={container?.companyWebsite || ''}
-                        onChange={(e) => {
-                          if (container) {
-                            saveContainer({ ...container, companyWebsite: e.target.value })
-                          }
-                        }}
-                        placeholder="https://miempresa.com"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-companyLogo">Logo de la Empresa</Label>
-                      <Input
-                        id="edit-companyLogo"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleCompanyLogoUpload}
-                        className="cursor-pointer"
-                      />
-                      {container?.companyLogo && (
-                        <div className="mt-2">
-                          <img
-                            src={container.companyLogo}
-                            alt="Logo Preview"
-                            className="w-20 h-20 object-cover rounded-md border"
+          {/* Column Management */}
+          {container.columns.length > 0 && (
+            <div className="bg-card border rounded-lg p-4">
+              <h3 className="font-semibold mb-3">Gestión de Columnas</h3>
+              <div className="grid grid-cols-1 gap-3">
+                {container.columns.map((column, index) => (
+                  <div key={column.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-muted rounded-lg gap-3">
+                    <div className="flex-1 w-full">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-medium">{column.name}</span>
+                        <span className="text-xs text-muted-foreground capitalize">({column.type})</span>
+                        {column.type === 'number' && column.sum && (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            SUMA
+                          </span>
+                        )}
+                      </div>
+                      {column.type === 'number' && (
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id={`sum-${column.id}`}
+                            checked={column.sum || false}
+                            onCheckedChange={() => toggleColumnSum(column.id)}
                           />
+                          <Label htmlFor={`sum-${column.id}`} className="text-xs">
+                            Sumar columna
+                          </Label>
                         </div>
                       )}
                     </div>
+                    <div className="flex items-center gap-1 w-full sm:w-auto">
+                      {/* Botones para mover */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => moveColumn(column.id, 'up')}
+                        disabled={index === 0}
+                        className="p-1 h-8 w-8 flex-shrink-0"
+                        title="Mover hacia arriba"
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => moveColumn(column.id, 'down')}
+                        disabled={index === container.columns.length - 1}
+                        className="p-1 h-8 w-8 flex-shrink-0"
+                        title="Mover hacia abajo"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                      {/* Botón para editar nombre */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditColumn(column)}
+                        className="p-1 h-8 w-8 flex-shrink-0"
+                        title="Editar nombre"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      {/* Botón para eliminar */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteColumn(column.id)}
+                        className="text-destructive hover:text-destructive p-1 h-8 w-8 flex-shrink-0"
+                        title="Eliminar columna"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                ))}
+              </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditContainerDataDialogOpen(false)}>
-                Cerrar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          )}
+
+          {/* Add Column Dialog */}
+          <Dialog open={isAddColumnDialogOpen} onOpenChange={setIsAddColumnDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Agregar Nueva Columna</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="column-name">Nombre de la Columna</Label>
+                  <Input
+                    id="column-name"
+                    value={newColumn.name}
+                    onChange={(e) => setNewColumn({ ...newColumn, name: e.target.value })}
+                    placeholder="Ingresa el nombre de la columna"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="column-type">Tipo de Dato</Label>
+                  <Select
+                    value={newColumn.type}
+                    onValueChange={(value) => setNewColumn({
+                      ...newColumn,
+                      type: value as 'text' | 'number',
+                      sum: value === 'text' ? false : newColumn.sum
+                    })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona el tipo de dato" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text">Texto</SelectItem>
+                      <SelectItem value="number">Número</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {newColumn.type === 'number' && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="column-sum"
+                      checked={newColumn.sum}
+                      onCheckedChange={(checked) => setNewColumn({ ...newColumn, sum: !!checked })}
+                    />
+                    <Label htmlFor="column-sum">
+                      Sumar todos los valores de esta columna
+                    </Label>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddColumnDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={addColumn}>
+                  Agregar Columna
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Row Dialog */}
+          <Dialog open={isEditRowDialogOpen} onOpenChange={setIsEditRowDialogOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Editar Fila</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {container.columns.map((column) => (
+                  <div key={column.id}>
+                    <Label htmlFor={`edit-${column.id}`}>
+                      {column.name} ({column.type})
+                    </Label>
+                    <Input
+                      id={`edit-${column.id}`}
+                      type={column.type === 'number' ? 'number' : 'text'}
+                      value={editingRowData[column.id] || ''}
+                      onChange={(e) => handleEditRowChange(column.id, e.target.value)}
+                      placeholder={`Ingresa ${column.type === 'number' ? 'un número' : 'texto'}`}
+                    />
+                  </div>
+                ))}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsEditRowDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={saveEditRow} className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Guardar Cambios
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Transfer Dialog */}
+          <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
+            <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Gestión de Transferencias</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                {/* Transfer Table Actions */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAddTransferColumnDialogOpen(true)}
+                    className="flex items-center gap-2 w-full sm:w-auto"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Agregar Columna
+                  </Button>
+                </div>
+
+                {/* Transfer Table */}
+                {(container.transferColumns || []).length > 0 ? (
+                  <DataTable
+                    columns={createDynamicColumns(container.transferColumns || [], editTransferRow, deleteTransferRow)}
+                    data={container.transferData || []}
+                    containerColumns={container.transferColumns || []}
+                    onAddRow={addTransferRow}
+                    showAddButton={true}
+                    container={{
+                      ...container,
+                      columns: container.transferColumns,
+                      data: container.transferData,
+                      percentageEnabled: false // Las transferencias no tienen porcentajes
+                    }}
+                    onUpdateContainer={(updatedContainer) => {
+                      saveContainer({
+                        ...container,
+                        transferData: updatedContainer.data,
+                        transferColumns: updatedContainer.columns
+                      })
+                    }}
+                  />
+                ) : (
+                  <div className="text-center py-12 border rounded-lg bg-muted/20">
+                    <p className="text-muted-foreground mb-4">
+                      No hay columnas de transferencia definidas aún
+                    </p>
+                    <Button onClick={() => setIsAddTransferColumnDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Crear Primera Columna de Transferencia
+                    </Button>
+                  </div>
+                )}
+
+                {/* Transfer Column Management */}
+                {(container.transferColumns || []).length > 0 && (
+                  <div className="bg-card border rounded-lg p-4">
+                    <h3 className="font-semibold mb-3">Gestión de Columnas de Transferencia</h3>
+                    <div className="grid grid-cols-1 gap-3">
+                      {(container.transferColumns || []).map((column) => (
+                        <div key={column.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-muted rounded-lg gap-3">
+                          <div className="flex-1">
+                            <p className="font-medium">{column.name}</p>
+                            <p className="text-sm text-muted-foreground capitalize">{column.type}</p>
+                            {column.type === 'number' && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <Checkbox
+                                  id={`transfer-sum-${column.id}`}
+                                  checked={column.sum || false}
+                                  onCheckedChange={() => toggleTransferColumnSum(column.id)}
+                                />
+                                <Label htmlFor={`transfer-sum-${column.id}`} className="text-xs">
+                                  Sumar columna
+                                </Label>
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteTransferColumn(column.id)}
+                            className="text-destructive hover:text-destructive w-full sm:w-auto"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="ml-2 sm:hidden">Eliminar</span>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsTransferDialogOpen(false)} className="w-full sm:w-auto">
+                  Cerrar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Add Transfer Column Dialog */}
+          <Dialog open={isAddTransferColumnDialogOpen} onOpenChange={setIsAddTransferColumnDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Agregar Nueva Columna de Transferencia</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="transfer-column-name">Nombre de la Columna</Label>
+                  <Input
+                    id="transfer-column-name"
+                    value={newTransferColumn.name}
+                    onChange={(e) => setNewTransferColumn({ ...newTransferColumn, name: e.target.value })}
+                    placeholder="Ej: Banco, Monto, Fecha"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="transfer-column-type">Tipo de Dato</Label>
+                  <Select
+                    value={newTransferColumn.type}
+                    onValueChange={(value) => setNewTransferColumn({
+                      ...newTransferColumn,
+                      type: value as 'text' | 'number',
+                      sum: value === 'text' ? false : newTransferColumn.sum
+                    })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona el tipo de dato" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text">Texto</SelectItem>
+                      <SelectItem value="number">Número</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {newTransferColumn.type === 'number' && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="transfer-column-sum"
+                      checked={newTransferColumn.sum}
+                      onCheckedChange={(checked) => setNewTransferColumn({ ...newTransferColumn, sum: !!checked })}
+                    />
+                    <Label htmlFor="transfer-column-sum">
+                      Sumar todos los valores de esta columna
+                    </Label>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddTransferColumnDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={addTransferColumn}>
+                  Agregar Columna
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Transfer Row Dialog */}
+          <Dialog open={isEditTransferRowDialogOpen} onOpenChange={setIsEditTransferRowDialogOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Editar Fila de Transferencia</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {(container.transferColumns || []).map((column) => (
+                  <div key={column.id}>
+                    <Label htmlFor={`edit-transfer-${column.id}`}>
+                      {column.name} ({column.type})
+                    </Label>
+                    <Input
+                      id={`edit-transfer-${column.id}`}
+                      type={column.type === 'number' ? 'number' : 'text'}
+                      value={editingTransferRowData[column.id] || ''}
+                      onChange={(e) => handleEditTransferRowChange(column.id, e.target.value)}
+                      placeholder={`Ingresa ${column.type === 'number' ? 'un número' : 'texto'}`}
+                    />
+                  </div>
+                ))}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsEditTransferRowDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={saveEditTransferRow} className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Guardar Cambios
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Column Dialog */}
+          <Dialog open={isEditColumnDialogOpen} onOpenChange={setIsEditColumnDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Editar Nombre de Columna</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-column-name">Nombre de la Columna</Label>
+                  <Input
+                    id="edit-column-name"
+                    value={editingColumnName}
+                    onChange={(e) => setEditingColumnName(e.target.value)}
+                    placeholder="Ingresa el nuevo nombre"
+                  />
+                </div>
+                {editingColumn && (
+                  <div className="text-sm text-muted-foreground">
+                    <p>Tipo: <span className="capitalize">{editingColumn.type}</span></p>
+                    {editingColumn.type === 'number' && editingColumn.sum && (
+                      <p>Esta columna está configurada para sumarse</p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsEditColumnDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={saveEditColumn} className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Guardar Cambios
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Container Data Dialog */}
+          <Dialog open={isEditContainerDataDialogOpen} onOpenChange={setIsEditContainerDataDialogOpen}>
+            <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Editar Datos de la Factura</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                {/* Datos Básicos */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Información Básica</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <Label htmlFor="edit-title">Título</Label>
+                        <Input
+                          id="edit-title"
+                          value={container?.title || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, title: e.target.value })
+                            }
+                          }}
+                          placeholder="Título de la factura"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-description">Información Adicional</Label>
+                        <Input
+                          id="edit-description"
+                          value={container?.description || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, description: e.target.value })
+                            }
+                          }}
+                          placeholder="Información Adicional"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Datos del Cliente */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Datos del Cliente</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <Label htmlFor="edit-clientName">Nombre del Cliente</Label>
+                        <Input
+                          id="edit-clientName"
+                          value={container?.clientName || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, clientName: e.target.value })
+                            }
+                          }}
+                          placeholder="Nombre completo o razón social"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-clientEmail">Email del Cliente</Label>
+                        <Input
+                          id="edit-clientEmail"
+                          type="email"
+                          value={container?.clientEmail || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, clientEmail: e.target.value })
+                            }
+                          }}
+                          placeholder="cliente@ejemplo.com"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-clientPhone">Teléfono del Cliente</Label>
+                        <Input
+                          id="edit-clientPhone"
+                          type="tel"
+                          value={container?.clientPhone || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, clientPhone: e.target.value })
+                            }
+                          }}
+                          placeholder="+1 234 567 890"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-clientDocument">Documento/DNI</Label>
+                        <Input
+                          id="edit-clientDocument"
+                          value={container?.clientDocument || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, clientDocument: e.target.value })
+                            }
+                          }}
+                          placeholder="12345678"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-clientAddress">Dirección del Cliente</Label>
+                        <Input
+                          id="edit-clientAddress"
+                          value={container?.clientAddress || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, clientAddress: e.target.value })
+                            }
+                          }}
+                          placeholder="Dirección completa"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-clientTaxId">CUIT/RUC/Tax ID</Label>
+                        <Input
+                          id="edit-clientTaxId"
+                          value={container?.clientTaxId || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, clientTaxId: e.target.value })
+                            }
+                          }}
+                          placeholder="20-12345678-9"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Datos de la Empresa */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Datos de la Empresa</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <Label htmlFor="edit-companyName">Nombre de la Empresa</Label>
+                        <Input
+                          id="edit-companyName"
+                          value={container?.companyName || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, companyName: e.target.value })
+                            }
+                          }}
+                          placeholder="Mi Empresa S.A."
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-companyEmail">Email de la Empresa</Label>
+                        <Input
+                          id="edit-companyEmail"
+                          type="email"
+                          value={container?.companyEmail || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, companyEmail: e.target.value })
+                            }
+                          }}
+                          placeholder="contacto@miempresa.com"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-companyPhone">Teléfono de la Empresa</Label>
+                        <Input
+                          id="edit-companyPhone"
+                          type="tel"
+                          value={container?.companyPhone || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, companyPhone: e.target.value })
+                            }
+                          }}
+                          placeholder="+1 234 567 890"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-companyTaxId">CUIT/RUC de la Empresa</Label>
+                        <Input
+                          id="edit-companyTaxId"
+                          value={container?.companyTaxId || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, companyTaxId: e.target.value })
+                            }
+                          }}
+                          placeholder="30-12345678-9"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-companyAddress">Dirección de la Empresa</Label>
+                        <Input
+                          id="edit-companyAddress"
+                          value={container?.companyAddress || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, companyAddress: e.target.value })
+                            }
+                          }}
+                          placeholder="Dirección de la empresa"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-companyWebsite">Sitio Web</Label>
+                        <Input
+                          id="edit-companyWebsite"
+                          value={container?.companyWebsite || ''}
+                          onChange={(e) => {
+                            if (container) {
+                              saveContainer({ ...container, companyWebsite: e.target.value })
+                            }
+                          }}
+                          placeholder="https://miempresa.com"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-companyLogo">Logo de la Empresa</Label>
+                        <Input
+                          id="edit-companyLogo"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleCompanyLogoUpload}
+                          className="cursor-pointer"
+                        />
+                        {container?.companyLogo && (
+                          <div className="mt-2">
+                            <img
+                              src={container.companyLogo}
+                              alt="Logo Preview"
+                              className="w-20 h-20 object-cover rounded-md border"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsEditContainerDataDialogOpen(false)} className="w-full sm:w-auto">
+                  Cerrar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
       </motion.div>
     </main>
   )

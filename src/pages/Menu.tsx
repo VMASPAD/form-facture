@@ -510,470 +510,473 @@ function Menu() {
         className="space-y-6"
       >
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Mis Facturas</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Mis Facturas</h1>
             <p className="text-muted-foreground">Gestiona tus tablas y datos</p>
           </div>
-<div className='flex flex-row gap-2'>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Nueva Factura
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Crear Nueva Factura</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-6">
-                {/* Información General */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Información General</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label htmlFor="title">Título de la Factura</Label>
-                      <Input
-                        id="title"
-                        value={newContainer.title}
-                        onChange={(e) => setNewContainer({ ...newContainer, title: e.target.value })}
-                        placeholder="Ej: Factura de Servicios"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="description">Información Adicional</Label>
-                      <Input
-                        id="description"
-                        value={newContainer.description}
-                        onChange={(e) => setNewContainer({ ...newContainer, description: e.target.value })}
-                        placeholder="Información Adicional de la factura"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="template">Plantilla</Label>
-                      <Select
-                        value={newContainer.template.toString()}
-                        onValueChange={(value) => setNewContainer({ ...newContainer, template: parseInt(value) })}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecciona una plantilla" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Océano Azul Minimalista</SelectItem>
-                          <SelectItem value="2">Verde Bosque Profesional</SelectItem>
-                          <SelectItem value="3">Naranja Atardecer Moderno</SelectItem>
-                          <SelectItem value="4">Púrpura Real Elegante</SelectItem>
-                          <SelectItem value="5">Teal Corporativo</SelectItem>
-                          <SelectItem value="6">Rosa Dorado Lujo</SelectItem>
-                          <SelectItem value="7">Negro Medianoche Premium</SelectItem>
-                          <SelectItem value="8">Amarillo Dorado Vibrante</SelectItem>
-                          <SelectItem value="9">Rosa Coral Creativo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Datos del Cliente */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Datos del Cliente</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="clientName">Nombre del Cliente</Label>
-                        <Input
-                          id="clientName"
-                          value={newContainer.clientName}
-                          onChange={(e) => setNewContainer({ ...newContainer, clientName: e.target.value })}
-                          placeholder="Nombre completo o razón social"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="clientEmail">Email del Cliente</Label>
-                        <Input
-                          id="clientEmail"
-                          type="email"
-                          value={newContainer.clientEmail}
-                          onChange={(e) => setNewContainer({ ...newContainer, clientEmail: e.target.value })}
-                          placeholder="cliente@ejemplo.com"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="clientPhone">Teléfono del Cliente</Label>
-                        <Input
-                          id="clientPhone"
-                          type="tel"
-                          value={newContainer.clientPhone}
-                          onChange={(e) => setNewContainer({ ...newContainer, clientPhone: e.target.value })}
-                          placeholder="+1 234 567 890"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="clientDocument">Documento/DNI</Label>
-                        <Input
-                          id="clientDocument"
-                          value={newContainer.clientDocument}
-                          onChange={(e) => setNewContainer({ ...newContainer, clientDocument: e.target.value })}
-                          placeholder="12345678"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Label htmlFor="clientAddress">Dirección del Cliente</Label>
-                        <Input
-                          id="clientAddress"
-                          value={newContainer.clientAddress}
-                          onChange={(e) => setNewContainer({ ...newContainer, clientAddress: e.target.value })}
-                          placeholder="Dirección completa"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="clientTaxId">CUIT/RUC/Tax ID</Label>
-                        <Input
-                          id="clientTaxId"
-                          value={newContainer.clientTaxId}
-                          onChange={(e) => setNewContainer({ ...newContainer, clientTaxId: e.target.value })}
-                          placeholder="20-12345678-9"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Datos de la Empresa */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Datos de la Empresa</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {companyTemplates.length > 0 && (
-                      <div>
-                        <Label htmlFor="companyTemplate">Cargar Template de Empresa</Label>
-                        <Select 
-                          value={selectedCompanyTemplate}
-                          onValueChange={(value) => {
-                            setSelectedCompanyTemplate(value);
-                            if (value && value !== "none") {
-                              loadCompanyTemplate(value);
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un template..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Sin template</SelectItem>
-                            {companyTemplates.map((template) => (
-                              <SelectItem key={template.id} value={template.id}>
-                                {template.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="companyName">Nombre de la Empresa</Label>
-                        <Input
-                          id="companyName"
-                          value={newContainer.companyName}
-                          onChange={(e) => setNewContainer({ ...newContainer, companyName: e.target.value })}
-                          placeholder="Mi Empresa S.A."
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="companyEmail">Email de la Empresa</Label>
-                        <Input
-                          id="companyEmail"
-                          type="email"
-                          value={newContainer.companyEmail}
-                          onChange={(e) => setNewContainer({ ...newContainer, companyEmail: e.target.value })}
-                          placeholder="contacto@miempresa.com"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="companyPhone">Teléfono de la Empresa</Label>
-                        <Input
-                          id="companyPhone"
-                          type="tel"
-                          value={newContainer.companyPhone}
-                          onChange={(e) => setNewContainer({ ...newContainer, companyPhone: e.target.value })}
-                          placeholder="+1 234 567 890"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="companyTaxId">CUIT/RUC de la Empresa</Label>
-                        <Input
-                          id="companyTaxId"
-                          value={newContainer.companyTaxId}
-                          onChange={(e) => setNewContainer({ ...newContainer, companyTaxId: e.target.value })}
-                          placeholder="30-12345678-9"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Label htmlFor="companyAddress">Dirección de la Empresa</Label>
-                        <Input
-                          id="companyAddress"
-                          value={newContainer.companyAddress}
-                          onChange={(e) => setNewContainer({ ...newContainer, companyAddress: e.target.value })}
-                          placeholder="Dirección de la empresa"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="companyWebsite">Sitio Web</Label>
-                        <Input
-                          id="companyWebsite"
-                          value={newContainer.companyWebsite}
-                          onChange={(e) => setNewContainer({ ...newContainer, companyWebsite: e.target.value })}
-                          placeholder="https://miempresa.com"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="companyLogo">Logo de la Empresa</Label>
-                        <Input
-                          id="companyLogo"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleCompanyLogoUpload}
-                          className="cursor-pointer"
-                        />
-                        {newContainer.companyLogo && (
-                          <div className="mt-2">
-                            <img
-                              src={newContainer.companyLogo}
-                              alt="Logo Preview"
-                              className="w-20 h-20 object-cover rounded-md border"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Métodos de Pago */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Métodos de Pago</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {paymentTemplates.length > 0 && (
-                      <div>
-                        <Label htmlFor="paymentTemplate">Cargar Template de Pago</Label>
-                        <Select 
-                          value={selectedPaymentTemplate}
-                          onValueChange={(value) => {
-                            setSelectedPaymentTemplate(value);
-                            if (value && value !== "none") {
-                              loadPaymentTemplate(value);
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona un template..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Sin template</SelectItem>
-                            {paymentTemplates.map((template) => (
-                              <SelectItem key={template.id} value={template.id}>
-                                {template.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="paymentAccount">Número de Cuenta</Label>
-                        <Input
-                          id="paymentAccount"
-                          value={newContainer.paymentAccount}
-                          onChange={(e) => setNewContainer({ ...newContainer, paymentAccount: e.target.value })}
-                          placeholder="058-214570/7"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="paymentCuit">CUIT/CUIL</Label>
-                        <Input
-                          id="paymentCuit"
-                          value={newContainer.paymentCuit}
-                          onChange={(e) => setNewContainer({ ...newContainer, paymentCuit: e.target.value })}
-                          placeholder="23317324830"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="paymentCbu">CBU</Label>
-                        <Input
-                          id="paymentCbu"
-                          value={newContainer.paymentCbu}
-                          onChange={(e) => setNewContainer({ ...newContainer, paymentCbu: e.target.value })}
-                          placeholder="0720058880000214570721"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="paymentAlias">Alias</Label>
-                        <Input
-                          id="paymentAlias"
-                          value={newContainer.paymentAlias}
-                          onChange={(e) => setNewContainer({ ...newContainer, paymentAlias: e.target.value })}
-                          placeholder="EMPRESA.NOMBRE"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={createContainer}>
-                  Crear Factura
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <Dialog>
-            <DialogTrigger>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Ver plantillas
-              </Button></DialogTrigger>
-            <DialogContent className="max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>Plantillas disponibles</DialogTitle>
-                <DialogDescription>
-                  Explora nuestras plantillas de diseño profesional para tus facturas
-                </DialogDescription>
-              </DialogHeader>
-              <div className="mt-4">
-                <Templates />
-              </div>
-            </DialogContent>
-          </Dialog>
           
-          <Dialog open={isTemplatesDialogOpen} onOpenChange={setIsTemplatesDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Edit className="h-4 w-4" />
-                Gestionar Templates
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Gestión de Templates</DialogTitle>
-                <DialogDescription>
-                  Crea y gestiona templates para datos de empresa y métodos de pago
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-6">
-                {/* Company Templates */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      Templates de Empresa
-                      <Button 
-                        onClick={() => setIsCreateCompanyTemplateDialogOpen(true)}
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Nuevo
-                      </Button>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {companyTemplates.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-4">
-                        No hay templates de empresa creados aún
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {companyTemplates.map((template) => (
-                          <div key={template.id} className="border rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold">{template.name}</h4>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => deleteCompanyTemplate(template.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <div className="text-sm text-muted-foreground space-y-1">
-                              <p><strong>Empresa:</strong> {template.companyName}</p>
-                              <p><strong>Email:</strong> {template.companyEmail}</p>
-                              <p><strong>Teléfono:</strong> {template.companyPhone}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Payment Templates */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      Templates de Pago
-                      <Button 
-                        onClick={() => setIsCreatePaymentTemplateDialogOpen(true)}
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Nuevo
-                      </Button>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {paymentTemplates.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-4">
-                        No hay templates de pago creados aún
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {paymentTemplates.map((template) => (
-                          <div key={template.id} className="border rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold">{template.name}</h4>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => deletePaymentTemplate(template.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <div className="text-sm text-muted-foreground space-y-1">
-                              <p><strong>Cuenta:</strong> {template.paymentAccount}</p>
-                              <p><strong>CUIT:</strong> {template.paymentCuit}</p>
-                              <p><strong>Alias:</strong> {template.paymentAlias}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsTemplatesDialogOpen(false)}>
-                  Cerrar
+          {/* Action buttons - responsive layout */}
+          <div className="flex flex-row sm:flex-row gap-2 w-full sm:w-auto">
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center w-fit justify-center gap-2 sm:w-auto">
+                  <Plus className="h-4 w-4" />
+                  <span className="sm:inline">Nueva Factura</span>
                 </Button>
-              </DialogFooter>
-            </DialogContent>
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Crear Nueva Factura</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6">
+                  {/* Información General */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Información General</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="title">Título de la Factura</Label>
+                        <Input
+                          id="title"
+                          value={newContainer.title}
+                          onChange={(e) => setNewContainer({ ...newContainer, title: e.target.value })}
+                          placeholder="Ej: Factura de Servicios"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="description">Información Adicional</Label>
+                        <Input
+                          id="description"
+                          value={newContainer.description}
+                          onChange={(e) => setNewContainer({ ...newContainer, description: e.target.value })}
+                          placeholder="Información Adicional de la factura"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="template">Plantilla</Label>
+                        <Select
+                          value={newContainer.template.toString()}
+                          onValueChange={(value) => setNewContainer({ ...newContainer, template: parseInt(value) })}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona una plantilla" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Violeta</SelectItem>
+                            <SelectItem value="2">Rojo</SelectItem>
+                            <SelectItem value="3">Naranja</SelectItem>
+                            <SelectItem value="4">Lima</SelectItem>
+                            <SelectItem value="5">Índigo</SelectItem>
+                            <SelectItem value="6">Rosa</SelectItem>
+                            <SelectItem value="7">Piedra</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Datos del Cliente */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Datos del Cliente</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <Label htmlFor="clientName">Nombre del Cliente</Label>
+                          <Input
+                            id="clientName"
+                            value={newContainer.clientName}
+                            onChange={(e) => setNewContainer({ ...newContainer, clientName: e.target.value })}
+                            placeholder="Nombre completo o razón social"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientEmail">Email del Cliente</Label>
+                          <Input
+                            id="clientEmail"
+                            type="email"
+                            value={newContainer.clientEmail}
+                            onChange={(e) => setNewContainer({ ...newContainer, clientEmail: e.target.value })}
+                            placeholder="cliente@ejemplo.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientPhone">Teléfono del Cliente</Label>
+                          <Input
+                            id="clientPhone"
+                            type="tel"
+                            value={newContainer.clientPhone}
+                            onChange={(e) => setNewContainer({ ...newContainer, clientPhone: e.target.value })}
+                            placeholder="+1 234 567 890"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientDocument">Documento/DNI</Label>
+                          <Input
+                            id="clientDocument"
+                            value={newContainer.clientDocument}
+                            onChange={(e) => setNewContainer({ ...newContainer, clientDocument: e.target.value })}
+                            placeholder="12345678"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientAddress">Dirección del Cliente</Label>
+                          <Input
+                            id="clientAddress"
+                            value={newContainer.clientAddress}
+                            onChange={(e) => setNewContainer({ ...newContainer, clientAddress: e.target.value })}
+                            placeholder="Dirección completa"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientTaxId">CUIT/RUC/Tax ID</Label>
+                          <Input
+                            id="clientTaxId"
+                            value={newContainer.clientTaxId}
+                            onChange={(e) => setNewContainer({ ...newContainer, clientTaxId: e.target.value })}
+                            placeholder="20-12345678-9"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Datos de la Empresa */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Datos de la Empresa</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {companyTemplates.length > 0 && (
+                        <div>
+                          <Label htmlFor="companyTemplate">Cargar Template de Empresa</Label>
+                          <Select 
+                            value={selectedCompanyTemplate}
+                            onValueChange={(value) => {
+                              setSelectedCompanyTemplate(value);
+                              if (value && value !== "none") {
+                                loadCompanyTemplate(value);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecciona un template..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Sin template</SelectItem>
+                              {companyTemplates.map((template) => (
+                                <SelectItem key={template.id} value={template.id}>
+                                  {template.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <Label htmlFor="companyName">Nombre de la Empresa</Label>
+                          <Input
+                            id="companyName"
+                            value={newContainer.companyName}
+                            onChange={(e) => setNewContainer({ ...newContainer, companyName: e.target.value })}
+                            placeholder="Mi Empresa S.A."
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="companyEmail">Email de la Empresa</Label>
+                          <Input
+                            id="companyEmail"
+                            type="email"
+                            value={newContainer.companyEmail}
+                            onChange={(e) => setNewContainer({ ...newContainer, companyEmail: e.target.value })}
+                            placeholder="contacto@miempresa.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="companyPhone">Teléfono de la Empresa</Label>
+                          <Input
+                            id="companyPhone"
+                            type="tel"
+                            value={newContainer.companyPhone}
+                            onChange={(e) => setNewContainer({ ...newContainer, companyPhone: e.target.value })}
+                            placeholder="+1 234 567 890"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="companyTaxId">CUIT/RUC de la Empresa</Label>
+                          <Input
+                            id="companyTaxId"
+                            value={newContainer.companyTaxId}
+                            onChange={(e) => setNewContainer({ ...newContainer, companyTaxId: e.target.value })}
+                            placeholder="30-12345678-9"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="companyAddress">Dirección de la Empresa</Label>
+                          <Input
+                            id="companyAddress"
+                            value={newContainer.companyAddress}
+                            onChange={(e) => setNewContainer({ ...newContainer, companyAddress: e.target.value })}
+                            placeholder="Dirección de la empresa"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="companyWebsite">Sitio Web</Label>
+                          <Input
+                            id="companyWebsite"
+                            value={newContainer.companyWebsite}
+                            onChange={(e) => setNewContainer({ ...newContainer, companyWebsite: e.target.value })}
+                            placeholder="https://miempresa.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="companyLogo">Logo de la Empresa</Label>
+                          <Input
+                            id="companyLogo"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleCompanyLogoUpload}
+                            className="cursor-pointer"
+                          />
+                          {newContainer.companyLogo && (
+                            <div className="mt-2">
+                              <img
+                                src={newContainer.companyLogo}
+                                alt="Logo Preview"
+                                className="w-20 h-20 object-cover rounded-md border"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Métodos de Pago */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Métodos de Pago</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {paymentTemplates.length > 0 && (
+                        <div>
+                          <Label htmlFor="paymentTemplate">Cargar Template de Pago</Label>
+                          <Select 
+                            value={selectedPaymentTemplate}
+                            onValueChange={(value) => {
+                              setSelectedPaymentTemplate(value);
+                              if (value && value !== "none") {
+                                loadPaymentTemplate(value);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecciona un template..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Sin template</SelectItem>
+                              {paymentTemplates.map((template) => (
+                                <SelectItem key={template.id} value={template.id}>
+                                  {template.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <Label htmlFor="paymentAccount">Número de Cuenta</Label>
+                          <Input
+                            id="paymentAccount"
+                            value={newContainer.paymentAccount}
+                            onChange={(e) => setNewContainer({ ...newContainer, paymentAccount: e.target.value })}
+                            placeholder="058-214570/7"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="paymentCuit">CUIT/CUIL</Label>
+                          <Input
+                            id="paymentCuit"
+                            value={newContainer.paymentCuit}
+                            onChange={(e) => setNewContainer({ ...newContainer, paymentCuit: e.target.value })}
+                            placeholder="23317324830"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="paymentCbu">CBU</Label>
+                          <Input
+                            id="paymentCbu"
+                            value={newContainer.paymentCbu}
+                            onChange={(e) => setNewContainer({ ...newContainer, paymentCbu: e.target.value })}
+                            placeholder="0720058880000214570721"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="paymentAlias">Alias</Label>
+                          <Input
+                            id="paymentAlias"
+                            value={newContainer.paymentAlias}
+                            onChange={(e) => setNewContainer({ ...newContainer, paymentAlias: e.target.value })}
+                            placeholder="EMPRESA.NOMBRE"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} className="w-full sm:w-auto">
+                    Cancelar
+                  </Button>
+                  <Button onClick={createContainer} className="w-full sm:w-auto">
+                    Crear Factura
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
           </Dialog>
+            <Dialog>
+              <DialogTrigger>
+                <Button variant="outline" className="flex items-center justify-center gap-2 w-fit sm:w-auto">
+                  <Plus className="h-4 w-4" />
+                  <span className="sm:inline">Ver plantillas</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Plantillas disponibles</DialogTitle>
+                  <DialogDescription>
+                    Explora nuestras plantillas de diseño profesional para tus facturas
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4">
+                  <Templates />
+                </div>
+              </DialogContent>
+            </Dialog>
+            
+            
+          </div><Dialog open={isTemplatesDialogOpen} onOpenChange={setIsTemplatesDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center justify-center gap-2 w-fit sm:w-auto">
+                  <Edit className="h-4 w-4" />
+                  <span className="sm:inline">Gestionar Templates</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Gestión de Templates</DialogTitle>
+                  <DialogDescription>
+                    Crea y gestiona templates para datos de empresa y métodos de pago
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6">
+                  {/* Company Templates */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <span>Templates de Empresa</span>
+                        <Button 
+                          onClick={() => setIsCreateCompanyTemplateDialogOpen(true)}
+                          size="sm"
+                          className="flex items-center gap-2 w-full sm:w-auto"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Nuevo
+                        </Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {companyTemplates.length === 0 ? (
+                        <p className="text-muted-foreground text-center py-4">
+                          No hay templates de empresa creados aún
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-4">
+                          {companyTemplates.map((template) => (
+                            <div key={template.id} className="border rounded-lg p-4">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
+                                <h4 className="font-semibold">{template.name}</h4>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => deleteCompanyTemplate(template.id)}
+                                  className="w-full sm:w-auto"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <div className="text-sm text-muted-foreground space-y-1">
+                                <p><strong>Empresa:</strong> {template.companyName}</p>
+                                <p><strong>Email:</strong> {template.companyEmail}</p>
+                                <p><strong>Teléfono:</strong> {template.companyPhone}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Payment Templates */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <span>Templates de Pago</span>
+                        <Button 
+                          onClick={() => setIsCreatePaymentTemplateDialogOpen(true)}
+                          size="sm"
+                          className="flex items-center gap-2 w-full sm:w-auto"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Nuevo
+                        </Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {paymentTemplates.length === 0 ? (
+                        <p className="text-muted-foreground text-center py-4">
+                          No hay templates de pago creados aún
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-4">
+                          {paymentTemplates.map((template) => (
+                            <div key={template.id} className="border rounded-lg p-4">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
+                                <h4 className="font-semibold">{template.name}</h4>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => deletePaymentTemplate(template.id)}
+                                  className="w-full sm:w-auto"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <div className="text-sm text-muted-foreground space-y-1">
+                                <p><strong>Cuenta:</strong> {template.paymentAccount}</p>
+                                <p><strong>CUIT:</strong> {template.paymentCuit}</p>
+                                <p><strong>Alias:</strong> {template.paymentAlias}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsTemplatesDialogOpen(false)} className="w-full sm:w-auto">
+                    Cerrar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </div>
-</div>
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -1034,38 +1037,39 @@ function Menu() {
                       )}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Link to={`/editor?id=${container.id}`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="w-full flex items-center justify-center gap-2">
                           <Edit className="h-3 w-3" />
-                          Ver
+                          <span>Ver</span>
                         </Button>
                       </Link>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => openEditProperties(container)}
-                        className="flex items-center gap-2"
+                        className="flex items-center justify-center gap-2 w-full sm:w-auto"
                       >
                         <Edit className="h-3 w-3" />
-                        Editar
+                        <span>Editar</span>
                       </Button>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button className="flex items-center gap-2 bg-red-500">
+                          <Button className="flex items-center justify-center gap-2 bg-red-500 w-full sm:w-auto">
                             <Trash2 className="h-3 w-3" />
+                            <span className="sm:hidden">Eliminar</span>
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="w-[95vw] max-w-md">
                           <DialogHeader>
-                            <DialogTitle>Seguro que queres eliminar el contenedor?</DialogTitle>
+                            <DialogTitle>¿Seguro que quieres eliminar el contenedor?</DialogTitle>
                           </DialogHeader>
-                          <DialogFooter>
+                          <DialogFooter className="flex-col sm:flex-row gap-2">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => deleteContainer(container.id)}
-                              className="text-destructive hover:text-destructive"
+                              className="text-destructive hover:text-destructive w-full sm:w-auto"
                             >
                               Eliminar Factura
                             </Button>
@@ -1082,7 +1086,7 @@ function Menu() {
 
         {/* Edit Properties Dialog */}
         <Dialog open={isEditPropertiesDialogOpen} onOpenChange={setIsEditPropertiesDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Editar Propiedades de la Factura</DialogTitle>
             </DialogHeader>
@@ -1121,15 +1125,13 @@ function Menu() {
                         <SelectValue placeholder="Selecciona una plantilla" />
                       </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">Océano Azul Minimalista</SelectItem>
-                          <SelectItem value="2">Verde Bosque Profesional</SelectItem>
-                          <SelectItem value="3">Naranja Atardecer Moderno</SelectItem>
-                          <SelectItem value="4">Púrpura Real Elegante</SelectItem>
-                          <SelectItem value="5">Teal Corporativo</SelectItem>
-                          <SelectItem value="6">Rosa Dorado Lujo</SelectItem>
-                          <SelectItem value="7">Negro Medianoche Premium</SelectItem>
-                          <SelectItem value="8">Amarillo Dorado Vibrante</SelectItem>
-                          <SelectItem value="9">Rosa Coral Creativo</SelectItem>
+                          <SelectItem value="1">Violeta</SelectItem>
+                          <SelectItem value="2">Rojo</SelectItem>
+                          <SelectItem value="3">Naranja</SelectItem>
+                          <SelectItem value="4">Lima</SelectItem>
+                          <SelectItem value="5">Índigo</SelectItem>
+                          <SelectItem value="6">Rosa</SelectItem>
+                          <SelectItem value="7">Piedra</SelectItem>
                         </SelectContent>
                     </Select>
                   </div>
@@ -1185,7 +1187,7 @@ function Menu() {
                       </Select>
                     </div>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <Label htmlFor="edit-clientName">Nombre del Cliente</Label>
                       <Input
@@ -1224,7 +1226,7 @@ function Menu() {
                         placeholder="12345678"
                       />
                     </div>
-                    <div className="md:col-span-2">
+                    <div>
                       <Label htmlFor="edit-clientAddress">Dirección del Cliente</Label>
                       <Input
                         id="edit-clientAddress"
@@ -1289,7 +1291,7 @@ function Menu() {
                       </Select>
                     </div>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <Label htmlFor="edit-companyName">Nombre de la Empresa</Label>
                       <Input
@@ -1328,7 +1330,7 @@ function Menu() {
                         placeholder="30-12345678-9"
                       />
                     </div>
-                    <div className="md:col-span-2">
+                    <div>
                       <Label htmlFor="edit-companyAddress">Dirección de la Empresa</Label>
                       <Input
                         id="edit-companyAddress"
@@ -1419,7 +1421,7 @@ function Menu() {
                       </Select>
                     </div>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <Label htmlFor="edit-paymentAccount">Número de Cuenta</Label>
                       <Input
@@ -1517,11 +1519,11 @@ function Menu() {
                 </CardContent>
               </Card>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditPropertiesDialogOpen(false)}>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setIsEditPropertiesDialogOpen(false)} className="w-full sm:w-auto">
                 Cancelar
               </Button>
-              <Button onClick={saveContainerProperties}>
+              <Button onClick={saveContainerProperties} className="w-full sm:w-auto">
                 Guardar Cambios
               </Button>
             </DialogFooter>
